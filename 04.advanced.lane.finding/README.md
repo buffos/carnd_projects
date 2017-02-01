@@ -263,7 +263,7 @@ Since managing Lanes is quite complex , i created a separate class `helpers\lane
     * Receive more points that before
     * Receive points that are not correctly spaced to be considered lanes
     * Define a driving lane (the one that the car is closest too) and keep track of it and restore if not in the data received
-    * Decide when to drop a lane or added to the video annotation
+    * Decide when to drop a lane or add it to the video annotation
 * Calculate the equations for each of the lanes , using the binary mask and the Lane Peaks that were identified by analysis of the histogram
     * Calculation was mostly done inside `helpers\lanesManager  createPolyFitData(self, binaryMask, laneColumn, searchWidth=LANE_WIDTH_SEARCH_MAX, debug=DEBUG_ON):`
     where I give the mask, the Lane position to examine, how wide the search should be (width of the bounding box) and if I want to view intermediate results (images)

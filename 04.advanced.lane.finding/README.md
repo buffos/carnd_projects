@@ -29,12 +29,9 @@ The goals / steps of this project are the following:
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 Here I will consider the rubric points individually and describe how I addressed each point in my implementation.
 
-=======
-## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
-Here I will consider the rubric points individually and describe how I addressed each point in my implementation.
 
 ---
->>>>>>> origin/master
+
 ### Writeup / README
 
 
@@ -83,7 +80,14 @@ from the dictionary. Then it simply applies the `cv2.undistort` function obdaini
 
 #### 1. Provide an example of a distortion-corrected image.
 
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
+I will use one of the test_images provided. The code that does this job is as simple as
+
+```
+     cam.loadCalibration('./calibration.p')
+     cam.undistortImageFromFile('./test_images/test1.jpg',save=True)
+```
+
+It will load the calibration file for the camera and then undistort the provided image
 
 ---
 
@@ -195,13 +199,14 @@ and then simply
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
 I expanded my Camera class to add this functionality. It is simply a wrapper around the `cv2.getPerspectiveTransform` that calculates
-the perspective Transfromation matrix and it requires 4 points in a plane as `source points`  and their corresponding coordinates
+the perspective Transformation matrix and it requires 4 points in a plane as `source points`  and their corresponding coordinates
 `destination points` in the final transform. 
 
 You can find it in the Camera Class. I use 3 functions
+
     * camera.getDefaultPerspectiveCorrectionPoints() which simply return the src and destination points
     * camera.calculatePerspectiveMatrix(src,dst) that calculate the cameraPerspective Matrix 
-    * camera.initializeProjectionPoints(image), that basically calls the above two and its called when the camera is initiallized 
+    * camera.initializeProjectionPoints(image), that basically calls the above two and its called when the camera is initialized
 
 I chose the hardcode the source and destination points in the following manner:
 
@@ -260,19 +265,21 @@ Since managing Lanes is quite complex , i created a separate class `helpers\lane
     * Define a driving lane (the one that the car is closest too) and keep track of it and restore if not in the data received
     * Decide when to drop a lane or added to the video annotation
 * Calculate the equations for each of the lanes , using the binary mask and the Lane Peaks that were identified by analysis of the histogram
+    * Calculation was mostly done inside `helpers\lanesManager  createPolyFitData(self, binaryMask, laneColumn, searchWidth=LANE_WIDTH_SEARCH_MAX, debug=DEBUG_ON):`
+    where I give the mask, the Lane position to examine, how wide the search should be (width of the bounding box) and if I want to view intermediate results (images)
     * Calculation was done by using the sliding window approach as shown in the lectures. We start from the base of the Lane Peak, as provided by the histogram
-    analysis, create small bounding boxes, splitting the image heigh in N parts, add the active pixels in a pool, calculate the "mean" of the active pixels,
-    so if we find that more are left, in next step as we go up, we shift the bounding box to that direction. In the end , we use the pool of active pixels
-    we have accumulated as we went up the image, and use numpy's polyfit function to create a second order polynomial the fit those pixels
+    analysis, create small bounding boxes, splitting the image height in N parts, add the active pixels in a pool, calculate the "mean" of the active pixels,
+    so if we find that there are more on a direction (left or right), in the next step as we go up, we shift the bounding box to that direction. In the end , we use the pool of active pixels
+    we have accumulated as we went up the image, and use numpy's polyfit function to create a second order polynomial to fit those pixels
     * After that the laneManager does some quality analysis, to see how different is this equation from the previous steps equation.
     I do that by comparing the first order derivatives of the polynomials, by requiring the [a,b] coefficients (the derivative
-    of the ay^2+b^y+c is ay+b and i take those a and b and form a vecto), seen as vectors, are close in the L2 norm sense.
-    * If they are found not to be within a user defined thresold then I create a weighted average such that is exactly at the required threshold.
+    of the ay^2+b^y+c is ay+b and i take those a and b and form a vector), seen as vectors, are close in the L2 norm sense.
+    * If they are found not to be within a user defined threshold then I create a weighted average such that, the new equation is exactly at the required threshold.
     You can view this function at `helpers\lanesManager  createWeightedEquation(old_equation, new_equation, k)`, where k is the threshold that has to be achieved
-    * I also tried analysis of Radius of curvatures between lanes, but that has proven unsuccesful 
-* Plot over images the calculated lanes and areas the create
+    * I also tried analysis of Radius of curvatures between lanes, but that has proven unsuccessful
+* Plot over images the calculated lanes and areas they create
 * Calculate the position of the car
-* Keep track of Bookeeping statistics
+* Keep track of Bookkeeping statistics
 
 
 You can view an example of the sliding window approach in the following image (taken from the hard challenge video)
@@ -282,7 +289,7 @@ You can view an example of the sliding window approach in the following image (t
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-This is done in the class laneManager `helpers\lanesManager function: calculateRCurve`. 
+This is done in the class laneManager `helpers\lanesManager function: calculateRCurve` by simply implementing the formula given in the lectures
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
@@ -303,7 +310,7 @@ plotting functionality , making it easier to use in the LanesManager Class. Ther
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
 I have uploaded my videos to youtube and here are the results of all 3 videos (the harder challenge is a failure but just for reference)
-I can upload them if that is necessary, but I thought I could save space
+I can upload them in Github, if that is necessary, but I thought I could save space
 
 * Here's a [link to my project video result](https://youtu.be/LOrw1w_fyrU)
 * Here's a [link to the challenge video](https://youtu.be/NBxxAsAmfTE)

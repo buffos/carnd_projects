@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+---
+
+>>>>>>> origin/master
 **Advanced Lane Finding Project**
 
 The goals / steps of this project are the following:
@@ -25,10 +30,17 @@ The goals / steps of this project are the following:
 [image6]: ./submission_images/sliding_windows_drawn_area.jpg "Output"
 
 
+<<<<<<< HEAD
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 Here I will consider the rubric points individually and describe how I addressed each point in my implementation.
 
+=======
+## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
+Here I will consider the rubric points individually and describe how I addressed each point in my implementation.
+
+---
+>>>>>>> origin/master
 ### Writeup / README
 
 

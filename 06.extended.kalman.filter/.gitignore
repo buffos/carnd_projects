@@ -1,0 +1,8 @@
+# build files
+build/
+
+# editor config
+.vs/
+
+# visualization notebooks
+notebooks/

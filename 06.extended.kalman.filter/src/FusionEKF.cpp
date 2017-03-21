@@ -29,7 +29,8 @@ FusionEKF::FusionEKF()
 	const double var_rho_dot = 0.09;
 	const double var_inf = 10000.0;
 
-	H_laser_ << 1.0, 0.0, 0.0, 0.0,
+	H_laser_ << 
+		1.0, 0.0, 0.0, 0.0,
 		0.0, 1.0, 0.0, 0.0;
 
 	R_laser_ << 
@@ -51,7 +52,7 @@ FusionEKF::FusionEKF()
 		0.0, 0.0, var_inf, 0.0,
 		0.0, 0.0, 0.0, var_inf;
 
-	ekf_.I_ = MatrixXd::Identity(ekf_.P_.rows(), ekf_.P_.cols());
+	ekf_.I_ = MatrixXd::Identity(ekf_.x_.size(), ekf_.x_.size());
 
 	ekf_.Q_ = MatrixXd(4, 4);
 	ekf_.Q_ << 
@@ -97,8 +98,8 @@ void FusionEKF::Initialize(const MeasurementPackage& m)
 		const double phi = m.raw_measurements_[1];
 		const double r_dot = m.raw_measurements_[2];
 
-		auto position = tools.PolarToCartesian(r, phi);
-		auto velocity = tools.PolarToCartesian(r_dot, phi);
+		VectorXd position = tools.PolarToCartesian(r, phi);
+		VectorXd velocity = tools.PolarToCartesian(r_dot, phi);
 		ekf_.x_ << position[0], position[1], velocity[0], velocity[1];
 	}
 	else if (m.sensor_type_ == MeasurementPackage::LASER)
@@ -149,7 +150,7 @@ void FusionEKF::Update(const MeasurementPackage& m)
 {
 	if (m.sensor_type_ == MeasurementPackage::RADAR)
 	{
-		const auto& z = m.raw_measurements_;	
+		const VectorXd& z = m.raw_measurements_;
 		const VectorXd z_prediction = PredictRadarMeasurement(ekf_.x_);
 		const VectorXd residual = z - z_prediction;
 
@@ -158,7 +159,7 @@ void FusionEKF::Update(const MeasurementPackage& m)
 	}
 	else
 	{
-		const auto &z = m.raw_measurements_;
+		const VectorXd &z = m.raw_measurements_;
 		const VectorXd z_prediction = H_laser_ * ekf_.x_;
 		const VectorXd residual = z - z_prediction;
 

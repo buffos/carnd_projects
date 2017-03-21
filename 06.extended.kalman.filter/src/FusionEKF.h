@@ -21,9 +21,9 @@ public:
   KalmanFilter ekf_;
 
 private:
-  void Initialize(const MeasurementPackage& measurement_package);
-  void Predict(const MeasurementPackage& measurement_package); // the prediction step
-  void Update(const MeasurementPackage& measurement_package); // the update step
+  void Initialize(const MeasurementPackage& measurement_pack);
+  void Predict(const MeasurementPackage& measurement_pack); // the prediction step
+  void Update(const MeasurementPackage& measurement_pack); // the update step
   void Update_Q_Matrix(double dt); // calculation of the Q matrix
   void Update_F_Matrix(double dt); // calculation of the F matrix
   VectorXd PredictRadarMeasurement(const VectorXd& x) const;

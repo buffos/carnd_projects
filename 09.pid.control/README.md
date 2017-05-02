@@ -1,3 +1,5 @@
+## Compilation
+
 1. Using **uWebSockets** == **0.14** (not 0.13). Its the latest version.
 
 There are some changes in the signature call of h.onMessage. Instead of  
@@ -31,3 +33,13 @@ If you try to compile with **uWebSockets 0.13** , it has to be reverted back to 
     >Open CMakeSetting.json. Under "variables entry" you have "value". There you put **your path** for vcpkg 
 
  - compile as usual.
+
+ ## Reflections
+
+ - I have used 2 controllers . One for speed one for steering.
+ - Implemented and used twiddling.
+ - A linear controller for speed does not work well, if you want to get high speeds.
+ - I used 3 target speeds depending on the steering angle. Low steering angles-> fast... Large angles -> low speed
+ - I have used both logic and twiddling to tune th PID for steering
+ - Twiddling does not always work. Many times it gets stuck in local minima and diverges
+ - Integration Error coefficion turns out to be zero

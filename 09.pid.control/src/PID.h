@@ -19,16 +19,21 @@ public:
 	/*
 	* twiddling variables
 	*/
+	const int activate_twiddler_every_n_iterations_ = 2000;
 	bool calibration_on_;
+	bool twiddler_yield_;
 
 	int twiddle_optimizingIndex_;
 	long twiddle_iterations_;
 	int twiddle_mode_;
+	
+	double twiddle_error_;
 
 	double twiddle_bestError_;
 
 	vector<double> p_;
 	vector<double> dp_;
+	vector<double> best_p_;
 
 	/*
 	* Errors
@@ -43,6 +48,7 @@ public:
 	double Kp_;
 	double Ki_;
 	double Kd_;
+	int integration_iterations_;
 
 	/*
 	* Constructor

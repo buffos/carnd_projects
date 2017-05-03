@@ -57,9 +57,10 @@ int main(int argc, char* argv[])
 	PID pid("streering_angle_pid");
 	PID speed_pid("speed_pid");
 
-	std::vector<double> pid_p = { 0.088, 0.0, 2.0 };
+	std::vector<double> pid_p = { 0.09, 0.001, 2.0};
+	//std::vector<double> pid_p = { 0.088, 0.0, 2.0 };
 	std::vector<double> speed_p = { 0.2, 0.001, 2.0 };
-	std::vector<double> dp = { 0.1, 0.01, 0.1 };
+	std::vector<double> dp = { 0.1, 0.0001, 1.0 };
 
 	// Initialize the pid variable.
 	pid.Init(pid_p[0], pid_p[1], pid_p[2]);
@@ -123,7 +124,7 @@ int main(int argc, char* argv[])
 					speed_value = restrictInRange(speed_pid.TotalError(), -10.0, 70.);
 
 					// crash detection
-					if (pid.twiddle_iterations_ > 1000 && cte > 5.0) {
+					if (std::abs(cte) > 5.0) {
 						pid.calibrationRESET();
 						speed_pid.calibrationRESET();
 						std::cout << reset_msg << std::endl;
@@ -132,8 +133,8 @@ int main(int argc, char* argv[])
 
 
 					// DEBUG
-					std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;
-					std::cout << "Speed Target: " << speed_target << " Speed Error: " << speed_error << " Throttle: " << speed_pid.TotalError() << std::endl;
+					// std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;
+					// std::cout << "Speed Target: " << speed_target << " Speed Error: " << speed_error << " Throttle: " << speed_pid.TotalError() << std::endl;
 
 					json msgJson;
 					msgJson["steering_angle"] = steer_value;

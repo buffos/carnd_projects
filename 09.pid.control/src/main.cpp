@@ -4,7 +4,7 @@
 #include <iostream>
 #include "json.hpp"
 #include "PID.h"
-#include <math.h>
+#include <cmath>
 #include <string>
 #include <algorithm>
 
@@ -57,8 +57,8 @@ int main(int argc, char* argv[])
 	PID pid("streering_angle_pid");
 	PID speed_pid("speed_pid");
 
-	std::vector<double> pid_p = { 0.09, 0.001, 2.0};
-	//std::vector<double> pid_p = { 0.088, 0.0, 2.0 };
+	// std::vector<double> pid_p = { 0.09, 0.001, 2.0};
+	std::vector<double> pid_p = { 0.088, 0.0, 2.0 };
 	std::vector<double> speed_p = { 0.2, 0.001, 2.0 };
 	std::vector<double> dp = { 0.1, 0.0001, 1.0 };
 
@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
 					if (std::abs(cte) > 5.0) {
 						pid.calibrationRESET();
 						speed_pid.calibrationRESET();
-						std::cout << reset_msg << std::endl;
+						std::cout << "Crash Detected. Resetting....." << std::endl;
 						(*ws).send(reset_msg.data(), reset_msg.length(), uWS::OpCode::TEXT);
 					}
 

@@ -1,6 +1,46 @@
 # CarND-Controls-MPC
 Self-Driving Car Engineer Nanodegree Program
 
+## The Model
+
+- Model = vehicle state + actuators
+- vehicle state = (x, y, psi: orientation of vehicle, v: speed)
+- actuators = (delta: steering angle, a: acceleration)
+- Lf = the distance between the vehicle's front and its center of gravity
+
+## Model Equations
+
+- x_t+1 - x_t + v_t * cos(psi_t) * dt = 0
+- y_t+1 - y_t + v_t * sin(psi_t) * dt = 0
+- psi_t+1 - psi_t + v_t / Lf * delta * dt = 0
+- v_t+1 - v_t + a_t * dt = 0
+
+## Setting up the Problem
+
+- Step 1: Transform given coordinates from world to car coordinates
+- Step 2: Fit the points of the reference driving line provided using a third degree polynomial
+- Step 3: Choosing number of steps we will look ahead and time step. Choose N = 10 and dt = 100ms. Looking ahead too much is hurting the solution
+- Step 4: Latency is set to 100ms
+- Step 5: Setting the initial state. This is calculated from model equations for dt = 100ms
+- Step 6: Solve the contrain problem
+- Step 7: Get back the steering angle and acceleration provided by the solution and push it to the simulator. Also draw reference and predicted driving lines
+
+## Solving the Constrain Problem
+
+- Step 1: Define the Cost function
+  - Cost = SUM_t [a1 * (Δ_cte)^2 + a2 * (Δ_error_psi)^2 + a3 * (v_t - target_v)^2 + a4 * delta_t^2 + a5 * a_t^2 + a6 * (Δ_delta_t)^2 + a7 * (Δ_a_t)^2 ]
+  - a1-a7 where choosen by trial and error
+  - Δf is the differnce between f_t+1 and f_t
+- Step 2: Define the Constrains
+  - the constrains are simply the Model equations applied for all the variables
+- Step 3: Initialize the variables
+  - for every time step we have variables representing x,y,psi,v,delta,a
+  - all are set to zero except for the initial time step
+- Step 4: Set bounds for the variables
+  - numberical bounds are set for the variables and they act as additional contrains
+
+
+
 ---
 
 ## Dependencies
@@ -11,7 +51,7 @@ Self-Driving Car Engineer Nanodegree Program
   * Linux: make is installed by default on most Linux distros
   * Mac: [install Xcode command line tools to get make](https://developer.apple.com/xcode/features/)
   * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)
-* gcc/g++ >= 5.4
+* gcc/g++ >= 5.4 but not g++7 (both uWebsockets and json.hpp fail)
   * Linux: gcc / g++ is installed by default on most Linux distros
   * Mac: same deal as make - [install Xcode command line tools]((https://developer.apple.com/xcode/features/)
   * Windows: recommend using [MinGW](http://www.mingw.org/)

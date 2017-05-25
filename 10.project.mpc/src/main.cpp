@@ -140,7 +140,7 @@ int main() {
 
 
                                         json msgJson;
-                                        msgJson["steering_angle"] = vars[0];
+                                        msgJson["steering_angle"] = vars[0] / 0.436332; // convert it to a percent
                                         msgJson["throttle"] = vars[1];
 
                                         //Display the MPC predicted trajectory

@@ -92,12 +92,18 @@ int main() {
                                 if (event == "telemetry") {
                                         // j[1] is the data JSON object
                                         // 1. get data from telemetry
+                                        const double Lf = 2.67;
+                                        double dt = 0.1; // 100ms delay time
+                                        
                                         vector<double> ptsx = j[1]["ptsx"];
                                         vector<double> ptsy = j[1]["ptsy"];
                                         double px = j[1]["x"];
                                         double py = j[1]["y"];
                                         double psi = j[1]["psi"];
                                         double v = j[1]["speed"];
+                                        double throttle_value = j[1]["throttle"];
+                                        double steer_value = j[1]["steering_angle"]; 
+                                        steer_value = deg2rad(steer_value * 25.0); // convert from % angle to radians
 
                                         // 2. convert vector<double> to Eigen::VectorXd
                                         Eigen::VectorXd ptsx_car = Eigen::VectorXd::Map(ptsx.data(), 6);
@@ -113,19 +119,15 @@ int main() {
                                         // 4. find the coefficients of a 3rd degree polynomial to fit the points
                                         auto coeffs = polyfit(ptsx_car, ptsy_car, 3);
 
-                                        // 5. Calculate initial state
-                                        const double Lf = 2.67;
-                                        double dt = 0.1; // 100ms delay time
-
-                                        double cte = polyeval(coeffs, 0.0);
-                                        double epsi = -atan(coeffs[1]);
-                                        double steer_value = j[1]["steering_angle"];
-                                        double throttle_value = j[1]["throttle"];
-
+                                        // 5. Calculate initial state                                        
                                         double state_x = v * dt; // x-axis is on car coordinates
                                         double state_y = 0.0;
                                         double state_psi = (steer_value / Lf) * (-v * dt); // minus because left should be negative
                                         double state_v = v + throttle_value*dt;
+
+                                        double cte = polyeval(coeffs, state_x); // cte at the the position of the actuation (at dt=100ms)
+                                        double epsi = -atan(coeffs[1]);
+
                                         double state_cte = cte + v*sin(epsi)*dt;
                                         double state_epsi = epsi - v * steer_value / Lf * dt;
 
@@ -140,7 +142,7 @@ int main() {
 
 
                                         json msgJson;
-                                        msgJson["steering_angle"] = vars[0] / 0.436332; // convert it to a percent
+                                        msgJson["steering_angle"] = 0.5* rad2deg(vars[0]) / 25. ; // from radians to percent angle.
                                         msgJson["throttle"] = vars[1];
 
                                         //Display the MPC predicted trajectory
@@ -148,6 +150,8 @@ int main() {
                                         vector<double> mpc_y_vals;
                                         // the solution returned by mpc is of the type
                                         // {steering_angle, throttle_value, x1, y1, x2, y2, ...}
+                                        mpc_x_vals.push_back(state_x);
+                                        mpc_y_vals.push_back(state_y);
                                         for (size_t i = 2; i < vars.size(); )
                                         {
                                                 mpc_x_vals.push_back(vars[i]);

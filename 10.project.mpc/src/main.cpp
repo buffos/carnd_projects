@@ -102,8 +102,9 @@ int main() {
                                         double psi = j[1]["psi"];
                                         double v = j[1]["speed"];
                                         double throttle_value = j[1]["throttle"];
-                                        double steer_value = j[1]["steering_angle"]; 
+                                        double steer_value = j[1]["steering_angle"]; // in percent of the maximum angle (25)
                                         steer_value = deg2rad(steer_value * 25.0); // convert from % angle to radians
+                                        v = 0.44704 * v; // convert mph to m/s
 
                                         // 2. convert vector<double> to Eigen::VectorXd
                                         Eigen::VectorXd ptsx_car = Eigen::VectorXd::Map(ptsx.data(), 6);
@@ -135,14 +136,14 @@ int main() {
                                         state << state_x, state_y, state_psi, state_v, state_cte, state_epsi;
 
                                         /*
-                                         * Calculate steeering angle and throttle using MPC.
+                                         * Calculate steering angle and throttle using MPC.
                                          * Both are in between [-1, 1].
                                          */
                                         auto vars = mpc.Solve(state, coeffs);
 
 
                                         json msgJson;
-                                        msgJson["steering_angle"] = 0.5* rad2deg(vars[0]) / 25. ; // from radians to percent angle.
+                                        msgJson["steering_angle"] = rad2deg(vars[0]) / 25. ; // from radians to percent angle.
                                         msgJson["throttle"] = vars[1];
 
                                         //Display the MPC predicted trajectory

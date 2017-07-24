@@ -9,6 +9,13 @@ set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 set(sources src/main.cpp)
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+set(vcpkg_dir "C:/Users/buffo/Code/cpp/vcpkg")
+include_directories("C:/Users/buffo/Code/cpp/vcpkg/installed/x86-windows/include/uWS")
+
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 
 
@@ -23,4 +30,6 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 add_executable(path_planning ${sources})
 
-target_link_libraries(path_planning z ssl uv uWS)
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	target_link_libraries(path_planning z ssl uv uWS)
+endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")

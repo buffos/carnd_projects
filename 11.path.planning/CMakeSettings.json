@@ -11,8 +11,8 @@
         "ctestCommandArgs": "",
         "variables": [
           {
-            "name": "CMAKE_TOOLCHAIN_FILE2",
-            "value": "C:/Users/buffo/Code/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            "name": "CMAKE_TOOLCHAIN_FILE",
+            "value": "C:\\Users\\buffo\\Code\\cpp\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
           }
         ]
       },
@@ -26,8 +26,8 @@
         "ctestCommandArgs": "",
         "variables": [
           {
-            "name": "CMAKE_TOOLCHAIN_FILE2",
-            "value": "C:/Users/buffo/Code/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            "name": "CMAKE_TOOLCHAIN_FILE",
+            "value": "C:\\Users\\buffo\\Code\\cpp\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
           }
         ]
       },
@@ -41,8 +41,8 @@
         "ctestCommandArgs": "",
         "variables": [
           {
-            "name": "CMAKE_TOOLCHAIN_FILE2",
-            "value": "C:/Users/buffo/Code/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            "name": "CMAKE_TOOLCHAIN_FILE",
+            "value": "C:\\Users\\buffo\\Code\\cpp\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
           }
         ]
       },
@@ -56,8 +56,8 @@
         "ctestCommandArgs": "",
         "variables": [
           {
-            "name": "CMAKE_TOOLCHAIN_FILE2",
-            "value": "C:/Users/buffo/Code/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            "name": "CMAKE_TOOLCHAIN_FILE",
+            "value": "C:\\Users\\buffo\\Code\\cpp\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
           }
         ]
       }

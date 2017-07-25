@@ -6,6 +6,14 @@
         "list": "cpp",
         "xstring": "cpp",
         "tuple": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "xutility": "cpp",
+        "random": "cpp",
+        "exception": "cpp",
+        "functional": "cpp",
+        "future": "cpp",
+        "memory": "cpp",
+        "chrono": "cpp",
+        "limits": "cpp"
     }
 }

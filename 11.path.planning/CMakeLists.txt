@@ -8,7 +8,10 @@ cmake_minimum_required (VERSION 3.5)
 set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
-set(sources src/main.cpp)
+set(sources 
+	src/tools.cpp
+	src/main.cpp
+	)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	

@@ -17,6 +17,12 @@
         "limits": "cpp",
         "cstdlib": "cpp",
         "xcomplex": "cpp",
-        "adolcforward": "cpp"
+        "adolcforward": "cpp",
+        "array": "cpp",
+        "forward_list": "cpp",
+        "initializer_list": "cpp",
+        "xhash": "cpp",
+        "xiosbase": "cpp",
+        "xtree": "cpp"
     }
 }

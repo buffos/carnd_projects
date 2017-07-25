@@ -128,6 +128,81 @@ vector<double> coords::getXY(double s, double d, vector<double> maps_s, vector<d
 	return {x, y};
 }
 
+// Create minimum jerk polynomial given start and end conditions
+vector<double> coords::JMT(vector<double> start, vector<double> end, double t)
+{
+	/*
+    Calculate the Jerk Minimizing Trajectory that connects the initial state
+    to the final state in time T.
+
+    INPUTS
+
+    start - the vehicles start location given as a length three array
+        corresponding to initial values of [s, s_dot, s_double_dot]
+
+    end   - the desired end state for vehicle. Like "start" this is a
+        length three array.
+
+    T     - The duration, in seconds, over which this maneuver should occur.
+
+    OUTPUT 
+    an array of length 6, each value corresponding to a coefficient in the polynomial 
+    s(t) = a_0 + a_1 * t + a_2 * t**2 + a_3 * t**3 + a_4 * t**4 + a_5 * t**5
+
+    EXAMPLE
+
+    > JMT( [0, 10, 0], [10, 10, 0], 1)
+    [0.0, 10.0, 0.0, 0.0, 0.0, 0.0]
+    */
+
+	MatrixXd A = MatrixXd(3, 3);
+	VectorXd B = MatrixXd(3, 1);
+
+	double t2 = t * t;
+	double t3 = t * t2;
+	double t4 = t * t3;
+	double t5 = t * t4;
+
+	A << t3, t4, t5,
+		3 * t2, 4 * t3, 5 * t4,
+		6 * t, 12 * t2, 20 * t3;
+
+	B << end[0] - (start[0] + start[1] * t + 0.5 * start[2] * t2),
+		end[1] - (start[1] + start[2] * t),
+		end[2] - start[2];
+
+	VectorXd C = A.inverse() * B;
+
+	double a0 = start[0];
+	double a1 = start[1];
+	double a2 = start[2] * 0.5;
+	double a3 = C[0];
+	double a4 = C[1];
+	double a5 = C[2];
+
+	vector<double> result = {a0, a1, a2, a3, a4, a5};
+
+	return result;
+}
+
+// create a list of N descrete points for the quintic polynomial from time [0,time]
+vector<double> coords::generateJMT_Path(vector<double> coefs, double time, int N)
+{
+	double dt = time / (N - 1);
+	vector<double> points;
+	for (int i = 0; i < N; i++)
+	{
+		double t = dt * i;
+		double t2 = t * t;
+		double t3 = t * t2;
+		double t4 = t * t3;
+		double t5 = t * t4;
+		double p = coefs[0] + coefs[1] * t + coefs[2] * t2 + coefs[3] * t3 + coefs[4] * t4 + coefs[5] * t5;
+		points.push_back(p);
+	}
+	return points;
+}
+
 void readWayPointsFromFile(string filename, vector<WayPoint> &wp)
 {
 	ifstream in_map_(filename.c_str(), ifstream::in);

@@ -8,8 +8,6 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-#include "Eigen-3.3/Eigen/Core"
-#include "Eigen-3.3/Eigen/QR"
 #include "tools.h"
 #include "vehicle.h"
 #include "road.h"

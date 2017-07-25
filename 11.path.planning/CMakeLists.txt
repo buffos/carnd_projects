@@ -9,6 +9,8 @@ set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 set(sources 
+	src/road.cpp
+	src/vehicle.cpp
 	src/tools.cpp
 	src/main.cpp
 	)

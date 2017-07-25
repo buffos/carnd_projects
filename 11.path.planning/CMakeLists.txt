@@ -2,7 +2,8 @@ project(Path_Planning)
 
 cmake_minimum_required (VERSION 3.5)
 
-add_definitions(-std=c++11)
+# add_definitions(-std=c++11)
+
 
 set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
@@ -10,11 +11,12 @@ set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 set(sources src/main.cpp)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
+	
 	set(vcpkg_dir "C:/Users/buffo/Code/cpp/vcpkg")
-	include_directories("C:/Users/buffo/Code/cpp/vcpkg/installed/x86-windows/include")
-	#include_directories("C:/Users/buffo/Code/cpp/vcpkg/installed/x86-windows/include/uWS")
-	#link_directories("C:/Users/buffo/Code/cpp/vcpkg/installed/x86-windows/lib")
+	set(CMAKE_TOOLCHAIN_FILE "${vcpkg_dir}./scripts/buildsystems/vcpkg.cmake")
+	
+	include_directories("${vcpkg_dir}./installed/x86-windows/include")
+	link_directories("${vcpkg_dir}./installed/x86-windows/lib")
 
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
@@ -35,3 +37,7 @@ add_executable(path_planning ${sources})
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	target_link_libraries(path_planning z ssl uv uWS)
 endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	target_link_libraries(path_planning zlib ssleay32 libuv uWS)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

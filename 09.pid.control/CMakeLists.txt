@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 set(vcpkg_dir "C:/Users/buffo/Code/cpp/vcpkg")
-#include_directories(${vcpkg}$/installed/x86-windows/include)
+include_directories(C:/Users/buffo/Code/cpp/vcpkg/installed/x86-windows/include)
 #include_directories(${vcpkg}$/installed/x86-windows/include/openssl)
 #include_directories(${vcpkg}$/installed/x86-windows/include/boost)
 include_directories("C:/Users/buffo/Code/cpp/vcpkg/installed/x86-windows/include/uWS")

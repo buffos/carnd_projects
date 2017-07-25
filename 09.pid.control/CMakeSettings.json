@@ -11,7 +11,7 @@
       "variables": [
         {
           "name": "CMAKE_TOOLCHAIN_FILE",
-          "value": "C:/Users/buffo/Code/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake"
+          "value": "C:\\Users\\buffo\\Code\\cpp\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
         }
       ]
     },

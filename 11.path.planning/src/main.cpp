@@ -11,6 +11,8 @@
 #include "Eigen-3.3/Eigen/Core"
 #include "Eigen-3.3/Eigen/QR"
 #include "tools.h"
+#include "vehicle.h"
+#include "road.h"
 
 using namespace std;
 
@@ -45,11 +47,13 @@ int main()
 
 	vector<WayPoint> wp;
 	readWayPointsFromFile(map_file_, wp);
+	Vehicle car;
+	Road road;
 
-	h.onMessage([&wp](uWS::WebSocket<uWS::SERVER> *ws, char *data, size_t length, uWS::OpCode opCode) {
+	h.onMessage([&wp, &car, &road](uWS::WebSocket<uWS::SERVER> *ws, char *data, size_t length, uWS::OpCode opCode) {
 		// "42" at the start of the message means there's a websocket message event.
 		// The 4 signifies a websocket message. The 2 signifies a websocket event
-		// auto sdata = string(data).substr(0, length); cout << sdata << endl;
+		// auto s_data = string(data).substr(0, length); cout << s_data << endl;
 		if (length && length > 2 && data[0] == '4' && data[1] == '2')
 		{
 
@@ -63,10 +67,10 @@ int main()
 
 				if (event == "telemetry")
 				{
-					CarData car(j, 1); // localization Data from json object at position 1 (main car).
+					car.updateData(j, 1);	// localization Data from json object at position 1 (main car).
+					road.updateData(j);		 // Sensor Fusion Data, a list of all other cars on the same side of the road.
+					car.readPreviousPath(j); // reads previous path, end_path data
 
-					car.readPreviousPath(j);		  // reads previous path, end_path data
-					car.otherCarsFromSensorFusion(j); // Sensor Fusion Data, a list of all other cars on the same side of the road.
 					string msg = car.createNextWebsocketMessage();
 
 					//this_thread::sleep_for(chrono::milliseconds(1000));
@@ -82,9 +86,7 @@ int main()
 		}
 	});
 
-	// We don't need this since we're not using HTTP but if it's removed the
-	// program
-	// doesn't compile :-(
+	// We don't need this since we're not using HTTP but if it's removed the program doesn't compile :-(
 	h.onHttpRequest([](uWS::HttpResponse *res, uWS::HttpRequest req, char *data, size_t, size_t) {
 		const std::string s = "<h1>Hello world!</h1>";
 		if (req.getUrl().valueLength == 1)

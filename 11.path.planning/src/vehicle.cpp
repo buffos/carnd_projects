@@ -70,3 +70,34 @@ int Vehicle::getLane()
     }
     return 0;
 }
+
+bool Vehicle::collidesWith(Vehicle other, double time)
+{
+    auto my_state = getStateAt(time);
+    auto other_state = other.getStateAt(time);
+    double myLane = my_state[0];
+    double otherLane = other_state[0];
+    double myS = my_state[1];
+    double otherS = other_state[1];
+    return (myLane == otherLane && abs(myS - otherS) < carLength);
+}
+
+pair<bool, int> Vehicle::willCollideWith(Vehicle other, int timesteps, double dt)
+{
+    for (int i = 0; i <= timesteps; i++)
+    {
+        if (collidesWith(other, i * dt))
+        {
+            return pair<bool, int>(true, i);
+        }
+    }
+    return pair<bool, int>(false, -1);
+}
+
+vector<double> Vehicle::getStateAt(double time)
+{
+    double new_s = s + speed * time + acc * time * time / 2;
+    double new_v = speed + acc * time;
+    double lane = (double)getLane();
+    return vector<double>{lane, new_s, new_v, acc};
+}

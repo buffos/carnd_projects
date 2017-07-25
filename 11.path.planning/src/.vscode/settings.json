@@ -4,6 +4,8 @@
         "algorithm": "cpp",
         "deque": "cpp",
         "list": "cpp",
-        "xstring": "cpp"
+        "xstring": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp"
     }
 }

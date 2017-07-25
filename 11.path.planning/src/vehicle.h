@@ -10,6 +10,7 @@ using namespace std;
 
 struct Vehicle
 {
+    const double carLength = 5;
     double x;
     double y;
     double s;
@@ -27,11 +28,15 @@ struct Vehicle
     Vehicle();
     Vehicle(double x, double y, double s, double d, double yaw, double speed);
     Vehicle(json j, int index = 1);
+
     void updateData(json j, int index = 1);
     void readPreviousPath(json j, int index = 1);
     string createNextWebsocketMessage();
 
     int getLane();
+    bool collidesWith(Vehicle other, double time=0);
+    pair<bool, int>  willCollideWith(Vehicle other, int timesteps, double dt);
+    vector<double> getStateAt(double time);
 };
 
 #endif // !VEHICLE_H

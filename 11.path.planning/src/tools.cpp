@@ -183,3 +183,17 @@ void CarData::otherCarsFromSensorFusion(json j, int index) {
 		otherCars.push_back(newCar);
 	}
 }
+
+string CarData::createNextWebsocketMessage() {
+	json msgJson;
+
+	vector<double> next_x_vals;
+	vector<double> next_y_vals;
+
+	msgJson["next_x"] = next_x_vals;
+	msgJson["next_y"] = next_y_vals;
+
+	string msg = "42[\"control\"," + msgJson.dump() + "]";
+
+	return msg;
+}

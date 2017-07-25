@@ -66,18 +66,7 @@ int main() {
 
 					car.readPreviousPath(j); // reads previous path, end_path data
 					car.otherCarsFromSensorFusion(j); // Sensor Fusion Data, a list of all other cars on the same side of the road.
-
-					json msgJson;
-
-					vector<double> next_x_vals;
-					vector<double> next_y_vals;
-
-
-					// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
-					msgJson["next_x"] = next_x_vals;
-					msgJson["next_y"] = next_y_vals;
-
-					auto msg = "42[\"control\"," + msgJson.dump() + "]";
+					string msg = car.createNextWebsocketMessage();
 
 					//this_thread::sleep_for(chrono::milliseconds(1000));
 					ws->send(msg.data(), msg.length(), uWS::OpCode::TEXT);

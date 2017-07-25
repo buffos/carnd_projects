@@ -48,6 +48,7 @@ struct CarData {
 	CarData(json j, int index=1);
 	void readPreviousPath(json j, int index=1);
 	void otherCarsFromSensorFusion(json j, int index = 1);
+	string createNextWebsocketMessage();
 };
 
 void readWayPointsFromFile(string filename, vector<WayPoint> &wp);

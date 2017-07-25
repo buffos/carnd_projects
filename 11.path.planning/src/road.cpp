@@ -3,7 +3,6 @@
 void Road::updateData(json j, int index)
 {
     auto sensor_fusion = j[index]["sensor_fusion"];
-    cars = {};
     for (unsigned int i = 0; i < sensor_fusion.size(); i++)
     {
         int id = sensor_fusion[i][0];
@@ -20,12 +19,12 @@ void Road::updateData(json j, int index)
     }
 }
 
-double Road::distanceInFront(Vehicle car, int lane)
+double Road::distanceInFront(Vehicle &car, int lane)
 {
     // this function will look ahead in the given lane and find the distance to the closest car in front
     double max_distance = 100.0; // check up to 100 meters
     double current_s = 9999999.0;
-    for (auto other_car : cars)
+    for (auto&& other_car : cars)
     {
         if (car.getLane() == other_car.getLane())
         {
@@ -51,12 +50,12 @@ double Road::distanceInFront(Vehicle car, int lane)
     return current_s;
 }
 
-double Road::distanceBehind(Vehicle car, int lane)
+double Road::distanceBehind(Vehicle &car, int lane)
 {
     // this function will look ahead in the given lane and find the distance to the closest car behind
     double max_distance = 100.0; // check up to 100 meters
     double current_s = 9999999.0;
-    for (auto other_car : cars)
+    for (auto&& other_car : cars)
     {
         if (car.getLane() == other_car.getLane())
         {

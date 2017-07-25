@@ -10,7 +10,7 @@ using namespace std;
 
 struct Road
 {
-    vector<Vehicle> cars{};
+    vector<Vehicle> cars;
     const float max_s = 6915.0;          // in meters after that its a loop
     const float max_speed = 27.0;        // 60mph = 26.82m/s
     const float target_speed = 23.0;     // 50mph = 22.352m/s
@@ -21,8 +21,8 @@ struct Road
 
     inline Road() {}
     void updateData(json j, int index = 1);
-    double distanceInFront(Vehicle car, int lane);
-    double distanceBehind(Vehicle car, int lane);
+    double distanceInFront(Vehicle &car, int lane);
+    double distanceBehind(Vehicle &car, int lane);
 };
 
 #endif // !ROAD_H

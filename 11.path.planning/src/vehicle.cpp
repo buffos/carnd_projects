@@ -7,6 +7,22 @@ Vehicle::Vehicle(double x, double y, double s, double d, double yaw, double spee
 
 Vehicle::Vehicle(json j, int index) : Vehicle(j[index]["x"], j[index]["y"], j[index]["s"], j[index]["d"], j[index]["yaw"], j[index]["speed"]) {}
 
+Vehicle::Vehicle(const Vehicle &car){
+    x = car.x;
+    y = car.y;
+    s = car.s;
+    d = car.d;
+    yaw = car.yaw;
+    speed = car.speed;
+    acc = car.acc;
+    time = car.time;
+    previous_x = {};
+    previous_y = {};
+    end_s = 0;
+    end_d = 0;
+    init_clock = true;
+}
+
 void Vehicle::updateData(json j, int index)
 {
     if (!init_clock)
@@ -71,7 +87,7 @@ int Vehicle::getLane()
     return 0;
 }
 
-bool Vehicle::collidesWith(Vehicle other, double time)
+bool Vehicle::collidesWith(Vehicle &other, double time)
 {
     auto my_state = getStateAt(time);
     auto other_state = other.getStateAt(time);
@@ -80,9 +96,10 @@ bool Vehicle::collidesWith(Vehicle other, double time)
     double myS = my_state[1];
     double otherS = other_state[1];
     return (myLane == otherLane && abs(myS - otherS) < carLength);
+    return true;
 }
 
-pair<bool, int> Vehicle::willCollideWith(Vehicle other, int timesteps, double dt)
+pair<bool, int> Vehicle::willCollideWith(Vehicle &other, int timesteps, double dt)
 {
     for (int i = 0; i <= timesteps; i++)
     {

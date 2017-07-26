@@ -3,11 +3,8 @@
 #define _USE_MATH_DEFINES
 
 #include <vector>
-#include "Eigen-3.3/Eigen/Dense"
 
 using namespace std;
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
 
 namespace coords
 {
@@ -19,8 +16,6 @@ int ClosestWaypoint(double x, double y, vector<double> maps_x, vector<double> ma
 int NextWaypoint(double x, double y, double theta, vector<double> maps_x, vector<double> maps_y);
 vector<double> getFrenet(double x, double y, double theta, vector<double> maps_x, vector<double> maps_y);
 vector<double> getXY(double s, double d, vector<double> maps_s, vector<double> maps_x, vector<double> maps_y);
-vector<double> JMT(vector< double> start, vector <double> end, double time);
-vector<double> generateJMT_Path(vector<double> coefs, double time, double timeIncrements);
 };
 
 struct WayPoint

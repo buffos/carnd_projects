@@ -168,7 +168,7 @@ StateGoal Planner::realizeKeepLane(Vehicle &car, Road &r)
     goal.start_s = {car.s, car.speed, car.acc};
     goal.start_d = {car.d, 0.0, 0.0};
 
-    goal.end_d = {car.getTargetD(car.getLane), 0.0, 0.0}; // maybe the car is not centered so center it
+    goal.end_d = {car.getTargetD(car.getLane()), 0.0, 0.0}; // maybe the car is not centered so center it
     goal.end_s = {
         car.s + 0.5 * (r.target_speed + car.speed) * planDuration, // just do algebra on vT + 0.5(targetV - v)*T^2/T
         r.target_speed,
@@ -190,7 +190,7 @@ StateGoal Planner::realizeMatchFront(Vehicle &car, Road &r)
     goal.start_s = {car.s, car.speed, car.acc};
     goal.start_d = {car.d, 0.0, 0.0};
 
-    goal.end_d = {car.getTargetD(car.getLane), 0.0, 0.0};
+    goal.end_d = {car.getTargetD(car.getLane()), 0.0, 0.0};
     goal.end_s = {
         car.s + 0.5 * (frontSpeed + car.speed) * planDuration,
         frontSpeed,

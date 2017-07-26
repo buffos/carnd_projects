@@ -36,6 +36,7 @@ struct Vehicle
     string createNextWebsocketMessage();
 
     int getLane();
+    double getTargetD(int lane);
     // predictions
     bool collidesWith(Vehicle &other, double time = 0);
     pair<bool, int> willCollideWith(Vehicle &other, int timesteps, double dt);

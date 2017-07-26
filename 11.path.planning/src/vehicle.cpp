@@ -7,7 +7,8 @@ Vehicle::Vehicle(double x, double y, double s, double d, double yaw, double spee
 
 Vehicle::Vehicle(json j, int index) : Vehicle(j[index]["x"], j[index]["y"], j[index]["s"], j[index]["d"], j[index]["yaw"], j[index]["speed"]) {}
 
-Vehicle::Vehicle(const Vehicle &car){
+Vehicle::Vehicle(const Vehicle &car)
+{
     x = car.x;
     y = car.y;
     s = car.s;
@@ -85,6 +86,22 @@ int Vehicle::getLane()
         return 3;
     }
     return 0;
+}
+
+double Vehicle::getTargetD(int lane)
+{
+    if (lane == 1)
+    {
+        return 2.0;
+    }
+    else if (lane == 2)
+    {
+        return 6.0;
+    }
+    else if (lane == 3)
+    {
+        return 10.0;
+    }
 }
 
 bool Vehicle::collidesWith(Vehicle &other, double time)

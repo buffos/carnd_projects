@@ -34,6 +34,7 @@ struct TrajectoryGenerator
     double timeDifferenceCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r);
     double s_DifferenceCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r);
     double d_DifferenceCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r);
+    double collisionCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r);
 };
 
 #endif //! TRAJECTORY_GENERATOR_H

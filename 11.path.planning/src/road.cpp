@@ -69,7 +69,7 @@ vector<double> Road::distanceBehind(Vehicle &car, int lane)
     double max_distance = 100.0; // check up to 100 meters
     double current_s = 9999999.0;
     double speed_carBehind = 1000000.0;
-    for (auto &&other_car : cars)
+    for (auto &other_car : cars)
     {
         if (car.getLane() == other_car.getLane())
         {
@@ -105,4 +105,18 @@ vector<double> Road::distanceBehind(Vehicle &car, int lane)
         }
     }
     return vector<double>{current_s, speed_carBehind};
+}
+
+double Road::closestVehicleAt(double s, double d, double time)
+{
+    double closest = 99999999.0;
+    for (auto &other_car : cars)
+    {
+        auto state = other_car.getStateAt(time);
+        double distance = sqrt((state[0] - s) * (state[0] - s) + (state[1] - d) * (state[1] - d));
+        if (distance < closest) {
+            closest = distance;
+        }
+    }
+    return closest;
 }

@@ -9,6 +9,8 @@ set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 set(sources 
+	src/trajectoryGenerator.cpp
+	src/polynomial.cpp
 	src/planner.cpp
 	src/road.cpp
 	src/vehicle.cpp

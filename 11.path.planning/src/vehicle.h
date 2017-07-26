@@ -24,7 +24,7 @@ struct Vehicle
     double end_s = 0;
     double end_d = 0;
     bool init_clock = false;
-    string mode = "CS"; // constant speed
+    string mode = "KL"; // keep lane
 
     Vehicle();
     Vehicle(double x, double y, double s, double d, double yaw, double speed);

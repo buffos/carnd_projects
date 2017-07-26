@@ -24,6 +24,7 @@ struct Vehicle
     double end_s = 0;
     double end_d = 0;
     bool init_clock = false;
+    string mode = "CS"; // constant speed
 
     Vehicle();
     Vehicle(double x, double y, double s, double d, double yaw, double speed);
@@ -35,8 +36,9 @@ struct Vehicle
     string createNextWebsocketMessage();
 
     int getLane();
-    bool collidesWith(Vehicle &other, double time=0);
-    pair<bool, int>  willCollideWith(Vehicle &other, int timesteps, double dt);
+    // predictions
+    bool collidesWith(Vehicle &other, double time = 0);
+    pair<bool, int> willCollideWith(Vehicle &other, int timesteps, double dt);
     vector<double> getStateAt(double time);
 };
 

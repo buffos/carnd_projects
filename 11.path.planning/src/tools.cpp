@@ -186,13 +186,12 @@ vector<double> coords::JMT(vector<double> start, vector<double> end, double t)
 }
 
 // create a list of N descrete points for the quintic polynomial from time [0,time]
-vector<double> coords::generateJMT_Path(vector<double> coefs, double time, int N)
+vector<double> coords::generateJMT_Path(vector<double> coefs, double time, double timeIncrements)
 {
-	double dt = time / (N - 1);
+	// int N = (int) ((time + timeIncrements)/timeIncrements);
 	vector<double> points;
-	for (int i = 0; i < N; i++)
+	for (double t = 0; t <= time; t += timeIncrements)
 	{
-		double t = dt * i;
 		double t2 = t * t;
 		double t3 = t * t2;
 		double t4 = t * t3;

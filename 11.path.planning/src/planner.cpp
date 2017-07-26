@@ -64,7 +64,7 @@ double Planner::costLaneChangeLeft(Vehicle &car, Road &r)
     double spaceNeeded = nearBuffer + car.carLength;
     double costForSpace = spaceNeeded / frontDistance + spaceNeeded / behindDistance - 2 * spaceNeeded;
     // this is exactly zero when I have nearBuffer space both in front and behind the vehicle
-    double costforSpeed = costSpeed(r.target_speed, frontDistance, frontSpeed);
+    double costforSpeed = costSpeed(car, r.target_speed, frontDistance, frontSpeed);
     return costForSpace + costforSpeed;
 }
 
@@ -91,7 +91,7 @@ double Planner::costLaneChangeRight(Vehicle &car, Road &r)
     double spaceNeeded = nearBuffer + car.carLength;
     double costForSpace = spaceNeeded / frontDistance + spaceNeeded / behindDistance - 2 * spaceNeeded;
     // this is exactly zero when I have nearBuffer space both in front and behind the vehicle
-    double costforSpeed = costSpeed(r.target_speed, frontDistance, frontSpeed);
+    double costforSpeed = costSpeed(car, r.target_speed, frontDistance, frontSpeed);
     return costForSpace + costforSpeed;
 }
 
@@ -107,7 +107,7 @@ double Planner::costKeepLane(Vehicle &car, Road &r)
     }
     double spaceNeeded = nearBuffer + car.carLength;
     double costForSpace = spaceNeeded / frontDistance;
-    double costforSpeed = costSpeed(r.target_speed, frontDistance, frontSpeed);
+    double costforSpeed = costSpeed(car, r.target_speed, frontDistance, frontSpeed);
     return costForSpace + costforSpeed;
 }
 
@@ -127,7 +127,7 @@ double Planner::costMatchFrontSpeed(Vehicle &car, Road &r)
     return slowDownCost;
 }
 
-double Planner::costSpeed(double desiredSpeed, double freeRoadAhead, double speedCarInFront)
+double Planner::costSpeed(Vehicle &car, double desiredSpeed, double freeRoadAhead, double speedCarInFront)
 {
     double relativeSpeed = desiredSpeed - speedCarInFront;
     if (relativeSpeed <= 0)
@@ -136,7 +136,7 @@ double Planner::costSpeed(double desiredSpeed, double freeRoadAhead, double spee
     }
     else
     {
-        double timeToReachFrontCar = (freeRoadAhead - nearBuffer) / relativeSpeed;
+        double timeToReachFrontCar = (freeRoadAhead - nearBuffer - car.carLength) / relativeSpeed;
         return 100 * timeToReachFrontCar;
     }
 }
@@ -168,7 +168,7 @@ StateGoal Planner::realizeKeepLane(Vehicle &car, Road &r)
     goal.start_s = {car.s, car.speed, car.acc};
     goal.start_d = {car.d, 0.0, 0.0};
 
-    goal.end_d = {car.d, 0.0, 0.0};
+    goal.end_d = {car.getTargetD(car.getLane), 0.0, 0.0}; // maybe the car is not centered so center it
     goal.end_s = {
         car.s + 0.5 * (r.target_speed + car.speed) * planDuration, // just do algebra on vT + 0.5(targetV - v)*T^2/T
         r.target_speed,
@@ -190,7 +190,7 @@ StateGoal Planner::realizeMatchFront(Vehicle &car, Road &r)
     goal.start_s = {car.s, car.speed, car.acc};
     goal.start_d = {car.d, 0.0, 0.0};
 
-    goal.end_d = {car.d, 0.0, 0.0};
+    goal.end_d = {car.getTargetD(car.getLane), 0.0, 0.0};
     goal.end_s = {
         car.s + 0.5 * (frontSpeed + car.speed) * planDuration,
         frontSpeed,

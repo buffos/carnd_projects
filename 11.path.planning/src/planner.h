@@ -30,7 +30,7 @@ struct Planner
     double costLaneChangeRight(Vehicle &car, Road &r);
     double costKeepLane(Vehicle &car, Road &r);
     double costMatchFrontSpeed(Vehicle &car, Road &r);
-    double costSpeed(double desiredSpeed, double freeRoadAhead, double speedCarInFront);
+    double costSpeed(Vehicle &car, double desiredSpeed, double freeRoadAhead, double speedCarInFront);
 
     // realize modes by creating start and end goals for s and d
     StateGoal realizePlan(string mode, Vehicle &car, Road &r);

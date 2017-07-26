@@ -140,3 +140,97 @@ double Planner::costSpeed(double desiredSpeed, double freeRoadAhead, double spee
         return 100 * timeToReachFrontCar;
     }
 }
+
+StateGoal Planner::realizePlan(string mode, Vehicle &car, Road &r)
+{
+    if (mode.compare("KL") == 0)
+    {
+        return realizeKeepLane(car, r);
+    }
+    else if (mode.compare("MF") == 0)
+    {
+        return realizeMatchFront(car, r);
+    }
+    else if (mode.compare("LCL") == 0)
+    {
+        return realizeChangeLeft(car, r);
+    }
+    else if (mode.compare("LCR") == 0)
+    {
+        return realizeChangeRight(car, r);
+    }
+}
+
+StateGoal Planner::realizeKeepLane(Vehicle &car, Road &r)
+{
+    StateGoal goal;
+    double newAcceleration = (r.target_speed - car.speed) / planDuration;
+    goal.start_s = {car.s, car.speed, car.acc};
+    goal.start_d = {car.d, 0.0, 0.0};
+
+    goal.end_d = {car.d, 0.0, 0.0};
+    goal.end_s = {
+        car.s + 0.5 * (r.target_speed + car.speed) * planDuration, // just do algebra on vT + 0.5(targetV - v)*T^2/T
+        r.target_speed,
+        newAcceleration};
+    goal.end_d = {car.d, 0.0, 0.0};
+    // no lateral movement so d is the default zero everywhere
+    return goal;
+}
+
+StateGoal Planner::realizeMatchFront(Vehicle &car, Road &r)
+{
+    StateGoal goal;
+
+    vector<double> frontResults = r.distanceInFront(car, car.getLane());
+    double frontDistance = frontResults[0];
+    double frontSpeed = frontResults[1];
+
+    double newAcceleration = (frontSpeed - car.speed) / planDuration;
+    goal.start_s = {car.s, car.speed, car.acc};
+    goal.start_d = {car.d, 0.0, 0.0};
+
+    goal.end_d = {car.d, 0.0, 0.0};
+    goal.end_s = {
+        car.s + 0.5 * (frontSpeed + car.speed) * planDuration,
+        frontSpeed,
+        newAcceleration};
+    return goal;
+}
+
+StateGoal Planner::realizeChangeLeft(Vehicle &car, Road &r)
+{
+    // keep speed but shift left
+    StateGoal goal;
+    goal.start_s = {car.s, car.speed, car.acc};
+    goal.start_d = {car.d, 0.0, 0.0};
+
+    goal.end_s = {
+        car.s + car.speed * planDuration,
+        car.speed,
+        0};
+    double delta_d = car.d - r.lane_width;
+    double delta_v = delta_d / planDuration;
+    double delta_g = delta_v / planDuration;
+
+    goal.end_d = {delta_d, delta_v, delta_g};
+    return goal;
+}
+
+StateGoal Planner::realizeChangeRight(Vehicle &car, Road &r)
+{
+    StateGoal goal;
+    goal.start_s = {car.s, car.speed, car.acc};
+    goal.start_d = {car.d, 0.0, 0.0};
+
+    goal.end_s = {
+        car.s + car.speed * planDuration,
+        car.speed,
+        0};
+    double delta_d = car.d + r.lane_width;
+    double delta_v = delta_d / planDuration;
+    double delta_g = delta_v / planDuration;
+
+    goal.end_d = {delta_d, delta_v, delta_g};
+    return goal;
+}

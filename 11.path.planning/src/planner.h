@@ -11,8 +11,10 @@ using namespace std;
 
 struct StateGoal
 {
-    vector<double> start{0.0, 0.0, 0.0};
-    vector<double> end{0.0, 0.0, 0.0};
+    vector<double> start_s{0.0, 0.0, 0.0};
+    vector<double> end_s{0.0, 0.0, 0.0};
+    vector<double> start_d{0.0, 0.0, 0.0};
+    vector<double> end_d{0.0, 0.0, 0.0};
 };
 
 struct Planner
@@ -31,6 +33,11 @@ struct Planner
     double costSpeed(double desiredSpeed, double freeRoadAhead, double speedCarInFront);
 
     // realize modes by creating start and end goals for s and d
+    StateGoal realizePlan(string mode, Vehicle &car, Road &r);
+    StateGoal realizeKeepLane(Vehicle &car, Road &r);
+    StateGoal realizeMatchFront(Vehicle &car, Road &r);
+    StateGoal realizeChangeLeft(Vehicle &car, Road &r);
+    StateGoal realizeChangeRight(Vehicle &car, Road &r);
 };
 
 #endif // !PLANNER_H

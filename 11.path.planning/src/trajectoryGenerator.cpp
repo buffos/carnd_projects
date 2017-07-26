@@ -1,7 +1,17 @@
 #include "trajectoryGenerator.h"
+#include "polynomial.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
+
+/// helper functions
+
+double logistic(double x)
+{
+    // A function that returns a value between 0 and 1 for x in the range [0, infinity]
+    //  and -1 to 1 for x in the range [-infinity, infinity].
+    return 2.0 / (1 + exp(-x)) - 1.0;
+}
 
 Trajectory TrajectoryGenerator::generateTrajectory(StateGoal &s, Vehicle &car, Road &r)
 {
@@ -11,7 +21,7 @@ Trajectory TrajectoryGenerator::generateTrajectory(StateGoal &s, Vehicle &car, R
     vector<StateGoal> newGoals = std::move(perturbGoal(s));
     vector<Trajectory> newTrajectories;
 
-    // for all plan duration times and all perturbations 
+    // for all plan duration times and all perturbations
     // of the original goal I create all possible trajectories
     for (double time = lowTimeBound; time <= highTimeBound; time += timestep)
     {
@@ -24,7 +34,7 @@ Trajectory TrajectoryGenerator::generateTrajectory(StateGoal &s, Vehicle &car, R
             tr.evaluation = 0.0;
             newTrajectories.push_back(tr);
         }
-    } 
+    }
 
     // now we evaluate the generated trajectories and select the best trajectory
     return Trajectory();
@@ -104,4 +114,53 @@ vector<double> TrajectoryGenerator::jmt(StateGoal &s, double t, int s_or_d)
     vector<double> result = {a0, a1, a2, a3, a4, a5};
 
     return result;
+}
+
+// cost because the trajectory is shorter or longer than the desired planDuration
+double TrajectoryGenerator::timeDifferenceCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
+{
+    double x = abs(planDuration - tr.duration) / planDuration;
+    return logistic(x);
+}
+
+// cost because the s coordinate and derivatives are not as the goal
+double TrajectoryGenerator::s_DifferenceCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
+{
+    Polynomial p(tr.s_trajectory); // create a polynomial based on the trajectory coefficients
+    double actual_s_s = p.evalAt(planDuration, 0);
+    double actual_s_v = p.evalAt(planDuration, 1);
+    double actual_s_a = p.evalAt(planDuration, 2);
+
+    // compare with the original goal from planner
+    double expected_s_s = s.end_s[0];
+    double expected_s_v = s.end_s[1];
+    double expected_s_a = s.end_s[2];
+
+    double cost = 0.0;
+    cost += logistic(abs(actual_s_s - expected_s_s) / sigma);
+    cost += logistic(abs(actual_s_v - expected_s_v) / sigma);
+    cost += logistic(abs(actual_s_a - expected_s_a) / sigma);
+
+    return cost;
+}
+
+// cost because the d coordinate and derivatives are not as the goal
+double TrajectoryGenerator::d_DifferenceCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
+{
+    Polynomial p(tr.s_trajectory); // create a polynomial based on the trajectory coefficients
+    double actual_d_s = p.evalAt(planDuration, 0);
+    double actual_d_v = p.evalAt(planDuration, 1);
+    double actual_d_a = p.evalAt(planDuration, 2);
+
+    // compare with the original goal from planner
+    double expected_d_s = s.end_d[0];
+    double expected_d_v = s.end_d[1];
+    double expected_d_a = s.end_d[2];
+
+    double cost = 0.0;
+    cost += logistic(abs(actual_d_s - expected_d_s) / sigma);
+    cost += logistic(abs(actual_d_v - expected_d_v) / sigma);
+    cost += logistic(abs(actual_d_a - expected_d_a) / sigma);
+
+    return cost;
 }

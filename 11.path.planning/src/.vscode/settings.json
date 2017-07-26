@@ -24,6 +24,7 @@
         "xhash": "cpp",
         "xiosbase": "cpp",
         "xtree": "cpp",
-        "xlocale": "cpp"
+        "xlocale": "cpp",
+        "queue": "cpp"
     }
 }

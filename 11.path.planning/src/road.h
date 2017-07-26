@@ -23,7 +23,7 @@ struct Road
     inline Road() {}
     void updateData(json j, int index = 1);
     vector<double> distanceInFront(Vehicle &car, int lane);
-    double distanceBehind(Vehicle &car, int lane);
+    vector<double> distanceBehind(Vehicle &car, int lane);
 };
 
 #endif // !ROAD_H

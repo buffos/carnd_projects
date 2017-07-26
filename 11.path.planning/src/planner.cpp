@@ -20,9 +20,11 @@ double Planner::costLaneChangeLeft(Vehicle &car, Road &r)
     }
 
     vector<double> frontResults = r.distanceInFront(car, currentLane - 1);
+    vector<double> behindResults = r.distanceBehind(car, currentLane - 1);
     double frontDistance = frontResults[0];
     double frontSpeed = frontResults[1];
-    double behindDistance = r.distanceBehind(car, currentLane - 1);
+    double behindDistance = behindResults[0];
+    double behindSpeed = behindResults[1];
 
     if (frontDistance == 0 || behindDistance == 0)
     {
@@ -43,9 +45,11 @@ double Planner::costLaneChangeRight(Vehicle &car, Road &r)
     }
 
     vector<double> frontResults = r.distanceInFront(car, currentLane + 1);
+    vector<double> behindResults = r.distanceBehind(car, currentLane + 1);
     double frontDistance = frontResults[0];
     double frontSpeed = frontResults[1];
-    double behindDistance = r.distanceBehind(car, currentLane + 1);
+    double behindDistance = behindResults[0];
+    double behindSpeed = behindResults[1];
 
     if (frontDistance == 0 || behindDistance == 0)
     {
@@ -58,5 +62,5 @@ double Planner::costLaneChangeRight(Vehicle &car, Road &r)
 
 double Planner::costKeepLane(Vehicle &car, Road &r)
 {
-	return 0.0;
+    return 0.0;
 }

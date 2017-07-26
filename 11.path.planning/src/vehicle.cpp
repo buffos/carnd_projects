@@ -16,10 +16,10 @@ Vehicle::Vehicle(const Vehicle &car){
     speed = car.speed;
     acc = car.acc;
     time = car.time;
-    previous_x = {};
-    previous_y = {};
-    end_s = 0;
-    end_d = 0;
+    previous_x = car.previous_x;
+    previous_y = car.previous_y;
+    end_s = car.end_s;
+    end_d = car.end_d;
     init_clock = true;
 }
 

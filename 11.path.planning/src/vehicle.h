@@ -10,7 +10,8 @@ using namespace std;
 
 struct Vehicle
 {
-    const double carLength = 5;
+    double carLength = 5.;
+    double safetyRadius = 2.; // safety radius
     double x;
     double y;
     double s;

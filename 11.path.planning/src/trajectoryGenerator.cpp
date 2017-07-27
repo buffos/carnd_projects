@@ -31,13 +31,19 @@ Trajectory TrajectoryGenerator::generateTrajectory(StateGoal &s, Vehicle &car, R
             tr.s_trajectory = std::move(jmt(goal, time, 1));
             tr.d_trajectory = std::move(jmt(goal, time, 2));
             tr.duration = time;
-            tr.evaluation = 0.0;
+            tr.cost = totalCost(tr, s, car, r); // find cost of trajectory
             newTrajectories.push_back(tr);
         }
     }
 
+    // sort the with increasing order based on cost
+    std::sort(newTrajectories.begin(), newTrajectories.end(), [](Trajectory &i, Trajectory &j) -> bool {
+        return i.cost < j.cost;
+    });
+
     // now we evaluate the generated trajectories and select the best trajectory
-    return Trajectory();
+    // from the sorted array of trajectories
+    return newTrajectories[0];
 }
 
 /// Generate perturbed goals from the one the planner initially selected
@@ -161,6 +167,94 @@ double TrajectoryGenerator::d_DifferenceCost(Trajectory &tr, StateGoal &s, Vehic
     cost += logistic(abs(actual_d_s - expected_d_s) / sigma);
     cost += logistic(abs(actual_d_v - expected_d_v) / sigma);
     cost += logistic(abs(actual_d_a - expected_d_a) / sigma);
+
+    return cost;
+}
+
+/// this will calculate the closest the vehicle will ever come in the trajectory with another vehicle
+double TrajectoryGenerator::collisionCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
+{
+    Polynomial p_s(tr.s_trajectory);
+    Polynomial p_d(tr.d_trajectory);
+
+    double closest = 9999999.0; // at any time
+    double dt = planDuration / 100.;
+    // split time in the number of frames i have and check the closest vehicle at that time
+    for (double t = 0; t <= planDuration; t += dt)
+    {
+        double s_at_time = p_s.evalAt(t, 0);
+        double d_at_time = p_d.evalAt(t, 0);
+        double closest_at_time = r.closestVehicleAt(s_at_time, d_at_time, t);
+        if (closest_at_time < closest)
+        {
+            closest = closest_at_time;
+        }
+    }
+    double cost = (closest < 2 * car.safetyRadius) ? 1.0 : 0.0;
+    return cost;
+}
+
+double TrajectoryGenerator::bufferCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
+{
+    Polynomial p_s(tr.s_trajectory);
+    Polynomial p_d(tr.d_trajectory);
+
+    double closest = 9999999.0; // at any time
+    double dt = planDuration / 100.;
+    // split time in the number of frames i have and check the closest vehicle at that time
+    for (double t = 0; t <= planDuration; t += dt)
+    {
+        double s_at_time = p_s.evalAt(t, 0);
+        double d_at_time = p_d.evalAt(t, 0);
+        double closest_at_time = r.closestVehicleAt(s_at_time, d_at_time, t);
+        if (closest_at_time < closest)
+        {
+            closest = closest_at_time;
+        }
+    }
+    double cost = logistic(2 * car.safetyRadius / closest);
+    return cost;
+}
+
+double TrajectoryGenerator::maxAccelerationCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
+{
+    Polynomial p_s(tr.s_trajectory);
+    double dt = planDuration / 100.;
+    double max_acceleration = 0.0;
+    for (double t = 0; t <= planDuration; t += dt)
+    {
+        double s_acc_at_time = p_s.evalAt(t, 2);
+        max_acceleration = (s_acc_at_time > max_acceleration) ? s_acc_at_time : max_acceleration;
+    }
+    double cost = logistic(max_acceleration / r.max_acceleration);
+    return cost;
+}
+
+double TrajectoryGenerator::maxJerkCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
+{
+    Polynomial p_s(tr.s_trajectory);
+    double dt = planDuration / 100.;
+    double max_jerk = 0.0;
+    for (double t = 0; t <= planDuration; t += dt)
+    {
+        double s_jerk_at_time = p_s.evalAt(t, 3);
+        max_jerk = (s_jerk_at_time > max_jerk) ? s_jerk_at_time : max_jerk;
+    }
+    double cost = logistic(max_jerk / r.max_jerk);
+    return cost;
+}
+
+double TrajectoryGenerator::totalCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
+{
+    double cost = 0;
+
+    cost += 1.0 * timeDifferenceCost(tr, s, car, r);
+    cost += 100 * s_DifferenceCost(tr, s, car, r);
+    cost += 10000 * d_DifferenceCost(tr, s, car, r);
+    cost += 1000000 * collisionCost(tr, s, car, r);
+    cost += 100 * bufferCost(tr, s, car, r);
+    cost += 5 * maxAccelerationCost(tr, s, car, r);
+    cost += 5 * maxJerkCost(tr, s, car, r);
 
     return cost;
 }

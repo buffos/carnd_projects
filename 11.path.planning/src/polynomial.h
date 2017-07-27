@@ -9,8 +9,9 @@ using namespace std;
 
 struct Polynomial{
     vector<double> coefficients;
-    vector<double> d_coefficients; // first derivate
-    vector<double> dd_coefficients; // second derivate
+    vector<double> d_coefficients; // first derivative
+    vector<double> dd_coefficients; // second derivative
+    vector<double> ddd_coefficients; // third derivative
 
     Polynomial();
     Polynomial(const Polynomial &other);

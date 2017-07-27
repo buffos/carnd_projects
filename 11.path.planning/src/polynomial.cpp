@@ -9,6 +9,7 @@ Polynomial::Polynomial(const Polynomial &other)
     coefficients = other.coefficients;
     d_coefficients = other.d_coefficients;
     dd_coefficients = other.dd_coefficients;
+    ddd_coefficients = other.ddd_coefficients;
 }
 
 Polynomial::Polynomial(vector<double> const &coeff)
@@ -23,6 +24,10 @@ Polynomial::Polynomial(vector<double> const &coeff)
         if (i > 1)
         {
             dd_coefficients.push_back(i * (i - 1) * coeff[i]); // second derivative
+        }
+        if (i > 2)
+        {
+            ddd_coefficients.push_back(i * (i - 1) * (i - 2) * coeff[i]); // second derivative
         }
     }
 }
@@ -39,8 +44,13 @@ double Polynomial::evalAt(double x, int order)
     {
         c = dd_coefficients;
     }
-    for (unsigned int i = 0; i < c.size(); i++) {
-       result += c[i] * pow(x, i);
+    else if (order == 3)
+    {
+        c = ddd_coefficients;
+    }
+    for (unsigned int i = 0; i < c.size(); i++)
+    {
+        result += c[i] * pow(x, i);
     }
     return result;
 }

@@ -16,7 +16,7 @@ struct Trajectory
     vector<double> s_trajectory;
     vector<double> d_trajectory;
     double duration;   // duration of trajectory
-    double evaluation; // evaluation of the trajectory by the planner
+    double cost; // cost of the trajectory by the planner
 };
 
 struct TrajectoryGenerator
@@ -31,10 +31,15 @@ struct TrajectoryGenerator
     vector<double> jmt(StateGoal &s, double time, int s_or_d = 1); // 1 is s , 2 means d
 
     // trajectory evaluation functions
+    double totalCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r);
+
     double timeDifferenceCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r);
     double s_DifferenceCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r);
     double d_DifferenceCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r);
     double collisionCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r);
+    double bufferCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r);
+    double maxAccelerationCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r);
+    double maxJerkCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r);
 };
 
 #endif //! TRAJECTORY_GENERATOR_H

@@ -73,6 +73,7 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "xcomplex": "cpp",
-        "adolcforward": "cpp"
+        "adolcforward": "cpp",
+        "alignedvector3": "cpp"
     }
 }

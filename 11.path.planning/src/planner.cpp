@@ -57,11 +57,11 @@ double Planner::costLaneChangeLeft(Vehicle &car, Road &r)
     double behindDistance = behindResults[0];
     double behindSpeed = behindResults[1];
 
-    if (frontDistance == car.carLength || behindDistance == car.carLength)
+    if (frontDistance == 0 || behindDistance == 0)
     {
         return maxCost;
     }
-    double spaceNeeded = nearBuffer + car.carLength;
+    double spaceNeeded = nearBuffer;
     double costForSpace = spaceNeeded / frontDistance + spaceNeeded / behindDistance - 2 * spaceNeeded;
     // this is exactly zero when I have nearBuffer space both in front and behind the vehicle
     double costforSpeed = costSpeed(car, r.target_speed, frontDistance, frontSpeed);
@@ -84,11 +84,11 @@ double Planner::costLaneChangeRight(Vehicle &car, Road &r)
     double behindDistance = behindResults[0];
     double behindSpeed = behindResults[1];
 
-    if (frontDistance == car.carLength || behindDistance == car.carLength)
+    if (frontDistance == 0 || behindDistance == 0)
     {
         return maxCost;
     }
-    double spaceNeeded = nearBuffer + car.carLength;
+    double spaceNeeded = nearBuffer;
     double costForSpace = spaceNeeded / frontDistance + spaceNeeded / behindDistance - 2 * spaceNeeded;
     // this is exactly zero when I have nearBuffer space both in front and behind the vehicle
     double costforSpeed = costSpeed(car, r.target_speed, frontDistance, frontSpeed);
@@ -101,11 +101,11 @@ double Planner::costKeepLane(Vehicle &car, Road &r)
     vector<double> frontResults = r.distanceInFront(car, currentLane);
     double frontDistance = frontResults[0];
     double frontSpeed = frontResults[1];
-    if (frontDistance == car.carLength)
+    if (frontDistance == 0)
     {
         return maxCost;
     }
-    double spaceNeeded = nearBuffer + car.carLength;
+    double spaceNeeded = nearBuffer;
     double costForSpace = spaceNeeded / frontDistance;
     double costforSpeed = costSpeed(car, r.target_speed, frontDistance, frontSpeed);
     return costForSpace + costforSpeed;
@@ -136,7 +136,7 @@ double Planner::costSpeed(Vehicle &car, double desiredSpeed, double freeRoadAhea
     }
     else
     {
-        double timeToReachFrontCar = (freeRoadAhead - nearBuffer - car.carLength) / relativeSpeed;
+        double timeToReachFrontCar = (freeRoadAhead - nearBuffer) / relativeSpeed;
         return 100 * timeToReachFrontCar;
     }
 }

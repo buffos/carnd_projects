@@ -26,7 +26,7 @@ struct TrajectoryGenerator
     double planDuration = 1.0; // in seconds. the original plan duration
     double numberOfSamples = 10;
 
-    Trajectory generateTrajectory(StateGoal &, Vehicle &car, Road &r);
+    Trajectory generateTrajectory(StateGoal &s, Vehicle &car, Road &r);
     vector<StateGoal> perturbGoal(StateGoal &goalState);
     vector<double> jmt(StateGoal &s, double time, int s_or_d = 1); // 1 is s , 2 means d
 

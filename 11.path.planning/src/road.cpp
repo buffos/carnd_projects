@@ -51,6 +51,7 @@ vector<double> Road::distanceInFront(Vehicle &car, int lane)
     // this function will look ahead in the given lane and find the distance to the closest car in front
     double current_s = 9999999.0;
     double speed_carInFront = 1000000.0;
+    double other_car_length = car.carLength;
     for (auto &&other_car : cars)
     {
         if (car.getLane() == other_car.getLane())
@@ -58,12 +59,15 @@ vector<double> Road::distanceInFront(Vehicle &car, int lane)
             auto car_distance = coords::real_s_distance(car.s, other_car.s, max_s);
 
             if (car_distance[0] < current_s && car_distance[1] == 2)
-            { // car_distance[1] == 1 means other car in front
+            { // car_distance[1] == 2 means other car (argument 2) in front
                 current_s = car_distance[0];
                 speed_carInFront = other_car.speed;
+                other_car_length = other_car.carLength;
             }
         }
     }
+    // s treats car like points so add the physical half lenghts
+    current_s -= (car.carLength + other_car_length) * 0.5;
     return vector<double>{current_s, speed_carInFront};
 }
 
@@ -73,19 +77,23 @@ vector<double> Road::distanceBehind(Vehicle &car, int lane)
     double max_distance = 100.0; // check up to 100 meters
     double current_s = 9999999.0;
     double speed_carBehind = 1000000.0;
+    double other_car_length = car.carLength;
     for (auto &other_car : cars)
     {
         if (car.getLane() == other_car.getLane())
         {
             auto car_distance = coords::real_s_distance(car.s, other_car.s, max_s);
 
-            if (car_distance[0] < current_s && car_distance[1] == 2)
-            { // car_distance[1] == 1 means other car in front
+            if (car_distance[0] < current_s && car_distance[1] == 1)
+            { // car_distance[1] == 1 means my car (argument 1) in front. so other_car is behind
                 current_s = car_distance[0];
                 speed_carBehind = other_car.speed;
+                other_car_length = other_car.carLength;
             }
         }
     }
+    // s treats car like points so add the physical half lenghts
+    current_s -= (car.carLength + other_car_length) * 0.5;
     return vector<double>{current_s, speed_carBehind};
 }
 

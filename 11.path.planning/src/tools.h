@@ -1,8 +1,12 @@
 #ifndef TOOLS_H
 #define TOOLS_H
+
 #define _USE_MATH_DEFINES
 
+#include <cmath>
 #include <vector>
+#include <math.h>
+
 
 using namespace std;
 
@@ -16,8 +20,6 @@ struct WayPoint
 
 	inline WayPoint(double x, double y, double s, double dx, double dy) : x(x), y(y), s(s), dx(dx), dy(dy) {}
 };
-
-void readWayPointsFromFile(string filename, vector<WayPoint> &wp);
 
 namespace coords
 {

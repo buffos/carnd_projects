@@ -1,5 +1,10 @@
 #include "road.h"
 
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+
 void Road::updateData(json j, int index)
 {
     auto sensor_fusion = j[index]["sensor_fusion"];
@@ -114,9 +119,32 @@ double Road::closestVehicleAt(double s, double d, double time)
     {
         auto state = other_car.getStateAt(time);
         double distance = sqrt((state[0] - s) * (state[0] - s) + (state[1] - d) * (state[1] - d));
-        if (distance < closest) {
+        if (distance < closest)
+        {
             closest = distance;
         }
     }
     return closest;
+}
+
+void Road::readWayPointsFromFile(string filename)
+{
+    ifstream in_map_(filename.c_str(), ifstream::in);
+    string line;
+
+    while (getline(in_map_, line))
+    {
+        istringstream iss(line);
+        double x;
+        double y;
+        float s;
+        float d_x;
+        float d_y;
+        iss >> x;
+        iss >> y;
+        iss >> s;
+        iss >> d_x;
+        iss >> d_y;
+        wpts.push_back(WayPoint(x, y, s, d_x, d_y));
+    }
 }

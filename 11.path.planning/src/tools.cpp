@@ -1,12 +1,6 @@
 
 #include "tools.h"
 
-#include <cmath>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <sstream>
-
 double coords::distance(double x1, double y1, double x2, double y2)
 {
 	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
@@ -127,25 +121,3 @@ vector<double> coords::getXY(double s, double d, vector<WayPoint> &wp)
 
 	return {x, y};
 }
-
-void readWayPointsFromFile(string filename, vector<WayPoint> &wp)
-{
-	ifstream in_map_(filename.c_str(), ifstream::in);
-	string line;
-
-	while (getline(in_map_, line))
-	{
-		istringstream iss(line);
-		double x;
-		double y;
-		float s;
-		float d_x;
-		float d_y;
-		iss >> x;
-		iss >> y;
-		iss >> s;
-		iss >> d_x;
-		iss >> d_y;
-		wp.push_back(WayPoint(x, y, s, d_x, d_y));
-	}
-} // READ WAYPOINTS

@@ -48,12 +48,12 @@ vector<StateGoal> TrajectoryGenerator::perturbGoal(StateGoal &s)
     vector<StateGoal> newGoals;
     std::default_random_engine generator; // to generate the random samples
 
-    std::normal_distribution<double> distribution_s_position(s.end_s[0], s.end_s[0] * sigma);
-    std::normal_distribution<double> distribution_s_velocity(s.end_s[1], s.end_s[1] * sigma);
-    std::normal_distribution<double> distribution_s_acceleration(s.end_s[2], s.end_s[2] * sigma);
-    std::normal_distribution<double> distribution_d_position(s.end_d[0], s.end_d[0] * sigma);
-    std::normal_distribution<double> distribution_d_velocity(s.end_d[1], s.end_d[1] * sigma);
-    std::normal_distribution<double> distribution_d_acceleration(s.end_d[2], s.end_d[2] * sigma);
+    std::normal_distribution<double> distribution_s_position(s.end_s[0], max(s.end_s[0] * sigma, sigma));
+    std::normal_distribution<double> distribution_s_velocity(s.end_s[1], max(s.end_s[1] * sigma, sigma));
+    std::normal_distribution<double> distribution_s_acceleration(s.end_s[2], max(s.end_s[2] * sigma, sigma));
+    std::normal_distribution<double> distribution_d_position(s.end_d[0], max(s.end_d[0] * sigma, sigma));
+    std::normal_distribution<double> distribution_d_velocity(s.end_d[1], max(s.end_d[1] * sigma, sigma));
+    std::normal_distribution<double> distribution_d_acceleration(s.end_d[2], max(s.end_d[2] * sigma, sigma));
 
     for (int i = 0; i < numberOfSamples; i++)
     {

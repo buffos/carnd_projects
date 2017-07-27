@@ -10,13 +10,12 @@ set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-set(vcpkg_dir "C:/Users/buffo/Code/cpp/vcpkg")
-include_directories(C:/Users/buffo/Code/cpp/vcpkg/installed/x86-windows/include)
-#include_directories(${vcpkg}$/installed/x86-windows/include/openssl)
-#include_directories(${vcpkg}$/installed/x86-windows/include/boost)
-include_directories("C:/Users/buffo/Code/cpp/vcpkg/installed/x86-windows/include/uWS")
-#link_directories(${vcpkg}$/installed/x86-windows/lib)
+	
+	set(vcpkg_dir "C:/Users/buffo/Code/cpp/vcpkg")
+	set(CMAKE_TOOLCHAIN_FILE "${vcpkg_dir}./scripts/buildsystems/vcpkg.cmake")
+	
+	include_directories("${vcpkg_dir}./installed/x86-windows/include")
+	link_directories("${vcpkg_dir}./installed/x86-windows/lib")
 
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
@@ -37,3 +36,7 @@ add_executable(pid ${sources})
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     target_link_libraries(pid z ssl uv uWS)
 endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	target_link_libraries(pid zlib ssleay32 libuv uWS)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

@@ -41,7 +41,8 @@ int main()
 {
 	uWS::Hub h;
 
-	const string map_file_ = "../data/highway_map.csv"; // Waypoint map to read from
+	// const string map_file_ = "../data/highway_map.csv"; // Waypoint map to read from
+	const string map_file_ = "C:/Users/buffo/Code/python/prj - selfDrivingCars/carnd-project/11.path.planning/data/highway_map.csv"; // Waypoint map to read from
 	const double max_s = 6945.554;						// The max s value before wrapping around the track back to 0
 
 	Vehicle car;
@@ -118,7 +119,7 @@ int main()
 	});
 
 	int port = 4567;
-	if (h.listen(port))
+	if (h.listen("0.0.0.0", port))
 	{
 		std::cout << "Listening to port " << port << std::endl;
 	}

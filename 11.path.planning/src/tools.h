@@ -10,6 +10,8 @@
 
 using namespace std;
 
+double logistic(double x);
+
 namespace coords
 {
 constexpr double pi() { return M_PI; }

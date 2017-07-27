@@ -74,6 +74,7 @@
         "xutility": "cpp",
         "xcomplex": "cpp",
         "adolcforward": "cpp",
-        "alignedvector3": "cpp"
+        "alignedvector3": "cpp",
+        "dense": "cpp"
     }
 }

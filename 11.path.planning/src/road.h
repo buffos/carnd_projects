@@ -10,7 +10,6 @@
 using json = nlohmann::json;
 using namespace std;
 
-
 struct Road
 {
     vector<Vehicle> cars;

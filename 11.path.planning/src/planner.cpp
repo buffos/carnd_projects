@@ -171,7 +171,7 @@ StateGoal Planner::realizeKeepLane(Vehicle &car, Road &r)
     goal.end_d = {car.getTargetD(car.getLane()), 0.0, 0.0}; // maybe the car is not centered so center it
     goal.end_s = {
         car.s + 0.5 * (r.rcfg.target_speed + car.speed) * planDuration, // just do algebra on vT + 0.5(targetV - v)*T^2/T
-		r.rcfg.target_speed,
+        r.rcfg.target_speed,
         newAcceleration};
     goal.end_d = {car.d, 0.0, 0.0};
     // no lateral movement so d is the default zero everywhere

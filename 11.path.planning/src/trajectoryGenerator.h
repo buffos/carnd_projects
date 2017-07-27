@@ -12,7 +12,6 @@
 
 using namespace std;
 
-
 struct TrajectoryGenerator
 {
     double sigma = 0.2;        // use 20% of the goal value as a standard deviation

@@ -7,15 +7,16 @@
 
 using namespace std;
 
-struct Polynomial{
+struct Polynomial
+{
     vector<double> coefficients;
-    vector<double> d_coefficients; // first derivative
-    vector<double> dd_coefficients; // second derivative
+    vector<double> d_coefficients;   // first derivative
+    vector<double> dd_coefficients;  // second derivative
     vector<double> ddd_coefficients; // third derivative
 
     Polynomial();
     Polynomial(const Polynomial &other);
-    Polynomial(vector<double> const& coeff);
+    Polynomial(vector<double> const &coeff);
     double evalAt(double x, int order);
 };
 

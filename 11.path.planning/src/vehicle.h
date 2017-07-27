@@ -22,8 +22,7 @@ struct Vehicle
     double speed;
     double acc = 0;
     chrono::steady_clock::time_point time;
-    vector<double> previous_x{};
-    vector<double> previous_y{};
+    DiscreteCurve previousCurve;
     double end_s = 0;
     double end_d = 0;
     bool init_clock = false;
@@ -36,8 +35,7 @@ struct Vehicle
 
     void updateData(json j, int index = 1);
     void readPreviousPath(json j, int index = 1);
-	void useRoadConfiguration(RoadConfiguration rcfg);
-    string createNextWebsocketMessage();
+    void useRoadConfiguration(RoadConfiguration rcfg);
 
     int getLane();
     double getTargetD(int lane);

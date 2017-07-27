@@ -9,6 +9,7 @@ set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 set(sources 
+	src/discreteCurves.cpp
 	src/trajectoryGenerator.cpp
 	src/polynomial.cpp
 	src/planner.cpp

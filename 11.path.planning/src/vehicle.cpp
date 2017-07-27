@@ -17,8 +17,7 @@ Vehicle::Vehicle(const Vehicle &car)
     speed = car.speed;
     acc = car.acc;
     time = car.time;
-    previous_x = car.previous_x;
-    previous_y = car.previous_y;
+    previousCurve = car.previousCurve;
     end_s = car.end_s;
     end_d = car.end_d;
     init_clock = true;
@@ -50,29 +49,16 @@ void Vehicle::updateData(json j, int index)
 
 void Vehicle::readPreviousPath(json j, int index)
 {
-    previous_x = j[index]["previous_path_x"].get<vector<double>>();
-    previous_y = j[index]["previous_path_y"].get<vector<double>>();
+    previousCurve.c_1 = j[index]["previous_path_x"].get<vector<double>>();
+    previousCurve.c_2 = j[index]["previous_path_y"].get<vector<double>>();
+    previousCurve.coordinateSystem = 1; // XY coordinates
     end_s = j[index]["end_path_s"];
     end_d = j[index]["end_path_d"];
 }
 
-void Vehicle::useRoadConfiguration(RoadConfiguration rcfg) {
-	this->r = rcfg;
-}
-
-string Vehicle::createNextWebsocketMessage()
+void Vehicle::useRoadConfiguration(RoadConfiguration rcfg)
 {
-    json msgJson;
-
-    vector<double> next_x_vals;
-    vector<double> next_y_vals;
-
-    msgJson["next_x"] = next_x_vals;
-    msgJson["next_y"] = next_y_vals;
-
-    string msg = "42[\"control\"," + msgJson.dump() + "]";
-
-    return msg;
+    this->r = rcfg;
 }
 
 int Vehicle::getLane()

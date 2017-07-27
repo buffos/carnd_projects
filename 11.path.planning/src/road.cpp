@@ -24,109 +24,6 @@ void Road::updateData(json j, int index)
     }
 }
 
-vector<double> Road::distanceInFront(Vehicle &car, int lane)
-{
-    // this function will look ahead in the given lane and find the distance to the closest car in front
-    double max_distance = 100.0; // check up to 100 meters
-    double current_s = 9999999.0;
-    double speed_carInFront = 1000000.0;
-    for (auto &&other_car : cars)
-    {
-        if (car.getLane() == other_car.getLane())
-        {
-            if ((car.s > max_s - max_distance) && (car.s < other_car.s) && (other_car.s < max_s))
-            {
-                // both cars are right before the end of the lap , so i take the difference
-                if (other_car.s - car.s < current_s)
-                {
-                    current_s = other_car.s - car.s;
-                    speed_carInFront = other_car.speed;
-                }
-            }
-            else if ((car.s > max_s - max_distance) && (other_car.s < max_distance))
-            {
-                // the car is just before the end and the other car has just crossed the end
-                // so the distance is what is left to the end (max_s - car.s) and what the other car has traveled (other_car.s)
-                double distance = max_s - car.s + other_car.s;
-                if (distance < current_s)
-                {
-                    current_s = distance;
-                    speed_carInFront = other_car.speed;
-                }
-            }
-            else if (car.s <= max_s - max_distance && car.s < other_car.s)
-            {
-                // the cars are in a zone that can be compared
-                if (other_car.s - car.s < current_s)
-                {
-                    current_s = other_car.s - car.s;
-                    speed_carInFront = other_car.speed;
-                }
-            }
-        }
-    }
-    return vector<double>{current_s, speed_carInFront};
-}
-
-vector<double> Road::distanceBehind(Vehicle &car, int lane)
-{
-    // this function will look ahead in the given lane and find the distance to the closest car behind
-    double max_distance = 100.0; // check up to 100 meters
-    double current_s = 9999999.0;
-    double speed_carBehind = 1000000.0;
-    for (auto &other_car : cars)
-    {
-        if (car.getLane() == other_car.getLane())
-        {
-            if ((other_car.s > max_s - max_distance) && (other_car.s < car.s) && (car.s < max_s))
-            {
-                // both cars are right before the end of the lap , and my car is in front, so i take the difference
-                if (car.s - other_car.s < current_s)
-                {
-                    current_s = other_car.s - car.s;
-                    speed_carBehind = other_car.speed;
-                }
-            }
-            else if ((other_car.s > max_s - max_distance) && (car.s < max_distance))
-            {
-                // the other car is just before the end and the my car has just crossed the end
-                // so the distance is what is left to the end (max_s - other_car.s) and what my car has traveled (car.s)
-                double distance = max_s - other_car.s + car.s;
-                if (distance < current_s)
-                {
-                    current_s = distance;
-                    speed_carBehind = other_car.speed;
-                }
-            }
-            else if (other_car.s <= max_s - max_distance && other_car.s < car.s)
-            {
-                // the cars are in a zone that can be compared and other car is behind
-                if (car.s - other_car.s < current_s)
-                {
-                    current_s = other_car.s - car.s;
-                    speed_carBehind = other_car.speed;
-                }
-            }
-        }
-    }
-    return vector<double>{current_s, speed_carBehind};
-}
-
-double Road::closestVehicleAt(double s, double d, double time)
-{
-    double closest = 99999999.0;
-    for (auto &other_car : cars)
-    {
-        auto state = other_car.getStateAt(time);
-        double distance = sqrt((state[0] - s) * (state[0] - s) + (state[1] - d) * (state[1] - d));
-        if (distance < closest)
-        {
-            closest = distance;
-        }
-    }
-    return closest;
-}
-
 void Road::readWayPointsFromFile(string filename)
 {
     ifstream in_map_(filename.c_str(), ifstream::in);
@@ -147,4 +44,63 @@ void Road::readWayPointsFromFile(string filename)
         iss >> d_y;
         wpts.push_back(WayPoint(x, y, s, d_x, d_y));
     }
+}
+
+vector<double> Road::distanceInFront(Vehicle &car, int lane)
+{
+    // this function will look ahead in the given lane and find the distance to the closest car in front
+    double current_s = 9999999.0;
+    double speed_carInFront = 1000000.0;
+    for (auto &&other_car : cars)
+    {
+        if (car.getLane() == other_car.getLane())
+        {
+            auto car_distance = coords::real_s_distance(car.s, other_car.s, max_s);
+
+            if (car_distance[0] < current_s && car_distance[1] == 2)
+            { // car_distance[1] == 1 means other car in front
+                current_s = car_distance[0];
+                speed_carInFront = other_car.speed;
+            }
+        }
+    }
+    return vector<double>{current_s, speed_carInFront};
+}
+
+vector<double> Road::distanceBehind(Vehicle &car, int lane)
+{
+    // this function will look ahead in the given lane and find the distance to the closest car behind
+    double max_distance = 100.0; // check up to 100 meters
+    double current_s = 9999999.0;
+    double speed_carBehind = 1000000.0;
+    for (auto &other_car : cars)
+    {
+        if (car.getLane() == other_car.getLane())
+        {
+            auto car_distance = coords::real_s_distance(car.s, other_car.s, max_s);
+
+            if (car_distance[0] < current_s && car_distance[1] == 2)
+            { // car_distance[1] == 1 means other car in front
+                current_s = car_distance[0];
+                speed_carBehind = other_car.speed;
+            }
+        }
+    }
+    return vector<double>{current_s, speed_carBehind};
+}
+
+double Road::closestVehicleAt(double s, double d, double time)
+{
+    double closest = 99999999.0;
+    for (auto &other_car : cars)
+    {
+        auto state = other_car.getStateAt(time);
+        double s_distance = coords::real_s_distance(state[0], s, max_s)[0]; // the first entry is the distance
+        double distance = sqrt(s_distance * s_distance + (state[1] - d) * (state[1] - d));
+        if (distance < closest)
+        {
+            closest = distance;
+        }
+    }
+    return closest;
 }

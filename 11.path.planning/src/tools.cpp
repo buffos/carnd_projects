@@ -121,3 +121,41 @@ vector<double> coords::getXY(double s, double d, vector<WayPoint> &wp)
 
 	return {x, y};
 }
+
+vector<double> coords::real_s_distance(double s1, double s2, double trackLength)
+{
+	double classicalDistance = abs(s1 - s2);
+	double realDistance;
+	double inFront; // 1 is s1 , 2 is s2
+	if (s1 > s2)
+	{
+		double distanceToEndOfTrack = trackLength - s1;
+		double forwardDistance = distanceToEndOfTrack + s2;
+		if (forwardDistance < classicalDistance)
+		{
+			realDistance = forwardDistance;
+			inFront = 2;
+		}
+		else
+		{
+			realDistance = classicalDistance;
+			inFront = 1;
+		}
+	}
+	else
+	{
+		double distanceToEndOfTrack = trackLength - s2;
+		double forwardDistance = distanceToEndOfTrack + s1;
+		if (forwardDistance < classicalDistance)
+		{
+			realDistance = forwardDistance;
+			inFront = 1;
+		}
+		else
+		{
+			realDistance = classicalDistance;
+			inFront = 2;
+		}
+	}
+	return vector<double>{realDistance, inFront};
+}

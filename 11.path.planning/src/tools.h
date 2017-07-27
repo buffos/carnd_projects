@@ -7,7 +7,6 @@
 #include <vector>
 #include <math.h>
 
-
 using namespace std;
 
 struct WayPoint
@@ -31,7 +30,7 @@ int ClosestWaypoint(double x, double y, vector<WayPoint> &wp);
 int NextWaypoint(double x, double y, double theta, vector<WayPoint> &wp);
 vector<double> getFrenet(double x, double y, double theta, vector<WayPoint> &wp);
 vector<double> getXY(double s, double d, vector<WayPoint> &wp);
+vector<double> real_s_distance(double s1, double s2, double trackLength);
 };
-
 
 #endif // !TOOLS_H

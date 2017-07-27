@@ -64,7 +64,7 @@ double Planner::costLaneChangeLeft(Vehicle &car, Road &r)
     double spaceNeeded = nearBuffer;
     double costForSpace = spaceNeeded / frontDistance + spaceNeeded / behindDistance - 2 * spaceNeeded;
     // this is exactly zero when I have nearBuffer space both in front and behind the vehicle
-    double costforSpeed = costSpeed(car, r.target_speed, frontDistance, frontSpeed);
+    double costforSpeed = costSpeed(car, r.rcfg.target_speed, frontDistance, frontSpeed);
     return costForSpace + costforSpeed;
 }
 
@@ -72,7 +72,7 @@ double Planner::costLaneChangeRight(Vehicle &car, Road &r)
 {
     int currentLane = car.getLane();
 
-    if (currentLane == r.lanes)
+    if (currentLane == r.rcfg.lanes)
     {
         return maxCost;
     }
@@ -91,7 +91,7 @@ double Planner::costLaneChangeRight(Vehicle &car, Road &r)
     double spaceNeeded = nearBuffer;
     double costForSpace = spaceNeeded / frontDistance + spaceNeeded / behindDistance - 2 * spaceNeeded;
     // this is exactly zero when I have nearBuffer space both in front and behind the vehicle
-    double costforSpeed = costSpeed(car, r.target_speed, frontDistance, frontSpeed);
+    double costforSpeed = costSpeed(car, r.rcfg.target_speed, frontDistance, frontSpeed);
     return costForSpace + costforSpeed;
 }
 
@@ -107,7 +107,7 @@ double Planner::costKeepLane(Vehicle &car, Road &r)
     }
     double spaceNeeded = nearBuffer;
     double costForSpace = spaceNeeded / frontDistance;
-    double costforSpeed = costSpeed(car, r.target_speed, frontDistance, frontSpeed);
+    double costforSpeed = costSpeed(car, r.rcfg.target_speed, frontDistance, frontSpeed);
     return costForSpace + costforSpeed;
 }
 
@@ -120,9 +120,9 @@ double Planner::costMatchFrontSpeed(Vehicle &car, Road &r)
     double frontDistance = frontResults[0];
     double frontSpeed = frontResults[1];
 
-    if (frontSpeed < r.target_speed)
+    if (frontSpeed < r.rcfg.target_speed)
     { // the front car is moving slower than my target speed
-        slowDownCost = 100 * (r.target_speed - frontSpeed);
+        slowDownCost = 100 * (r.rcfg.target_speed - frontSpeed);
     }
     return slowDownCost;
 }
@@ -164,14 +164,14 @@ StateGoal Planner::realizePlan(string mode, Vehicle &car, Road &r)
 StateGoal Planner::realizeKeepLane(Vehicle &car, Road &r)
 {
     StateGoal goal;
-    double newAcceleration = (r.target_speed - car.speed) / planDuration;
+    double newAcceleration = (r.rcfg.target_speed - car.speed) / planDuration;
     goal.start_s = {car.s, car.speed, car.acc};
     goal.start_d = {car.d, 0.0, 0.0};
 
     goal.end_d = {car.getTargetD(car.getLane()), 0.0, 0.0}; // maybe the car is not centered so center it
     goal.end_s = {
-        car.s + 0.5 * (r.target_speed + car.speed) * planDuration, // just do algebra on vT + 0.5(targetV - v)*T^2/T
-        r.target_speed,
+        car.s + 0.5 * (r.rcfg.target_speed + car.speed) * planDuration, // just do algebra on vT + 0.5(targetV - v)*T^2/T
+		r.rcfg.target_speed,
         newAcceleration};
     goal.end_d = {car.d, 0.0, 0.0};
     // no lateral movement so d is the default zero everywhere
@@ -209,7 +209,7 @@ StateGoal Planner::realizeChangeLeft(Vehicle &car, Road &r)
         car.s + car.speed * planDuration,
         car.speed,
         0};
-    double delta_d = car.d - r.lane_width;
+    double delta_d = car.d - r.rcfg.lane_width;
     double delta_v = delta_d / planDuration;
     double delta_g = delta_v / planDuration;
 
@@ -227,7 +227,7 @@ StateGoal Planner::realizeChangeRight(Vehicle &car, Road &r)
         car.s + car.speed * planDuration,
         car.speed,
         0};
-    double delta_d = car.d + r.lane_width;
+    double delta_d = car.d + r.rcfg.lane_width;
     double delta_v = delta_d / planDuration;
     double delta_g = delta_v / planDuration;
 

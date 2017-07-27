@@ -4,6 +4,7 @@
 #include "json.hpp"
 #include <vector>
 #include <chrono>
+#include "various_structs.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -12,6 +13,7 @@ struct Vehicle
 {
     double carLength = 5.0;
     double safetyRadius = 2.0; // safety radius
+    RoadConfiguration r;
     double x;
     double y;
     double s;
@@ -34,6 +36,7 @@ struct Vehicle
 
     void updateData(json j, int index = 1);
     void readPreviousPath(json j, int index = 1);
+	void useRoadConfiguration(RoadConfiguration rcfg);
     string createNextWebsocketMessage();
 
     int getLane();

@@ -49,6 +49,7 @@ int main()
 	TrajectoryGenerator tr_generator;
 
 	road.readWayPointsFromFile(map_file_);
+	car.useRoadConfiguration(road.rcfg); // tell the car to use the configuration of road (basically for 
 
 	h.onMessage([&car, &road, &plan, &tr_generator](uWS::WebSocket<uWS::SERVER> *ws, char *data, size_t length, uWS::OpCode opCode) {
 		// "42" at the start of the message means there's a websocket message event.

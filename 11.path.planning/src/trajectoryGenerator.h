@@ -8,16 +8,10 @@
 #include "Eigen-3.3/Eigen/Dense"
 #include "polynomial.h"
 #include "planner.h"
+#include "various_structs.h"
 
 using namespace std;
 
-struct Trajectory
-{
-    vector<double> s_trajectory;
-    vector<double> d_trajectory;
-    double duration;   // duration of trajectory
-    double cost; // cost of the trajectory by the planner
-};
 
 struct TrajectoryGenerator
 {

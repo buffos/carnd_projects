@@ -4,18 +4,11 @@
 #include <map>
 #include <vector>
 #include <string>
+#include "various_structs.h"
 #include "vehicle.h"
 #include "road.h"
 
 using namespace std;
-
-struct StateGoal
-{
-    vector<double> start_s{0.0, 0.0, 0.0};
-    vector<double> end_s{0.0, 0.0, 0.0};
-    vector<double> start_d{0.0, 0.0, 0.0};
-    vector<double> end_d{0.0, 0.0, 0.0};
-};
 
 struct Planner
 {

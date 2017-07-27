@@ -56,6 +56,10 @@ void Vehicle::readPreviousPath(json j, int index)
     end_d = j[index]["end_path_d"];
 }
 
+void Vehicle::useRoadConfiguration(RoadConfiguration rcfg) {
+	this->r = rcfg;
+}
+
 string Vehicle::createNextWebsocketMessage()
 {
     json msgJson;
@@ -73,35 +77,16 @@ string Vehicle::createNextWebsocketMessage()
 
 int Vehicle::getLane()
 {
-    if (d > 1.0 && d < 3.0)
+    if (d < 0 or d > r.lane_width * r.lanes)
     {
-        return 1;
+        return 0;
     }
-    if (d > 5.0 && d < 7.0)
-    {
-        return 2;
-    }
-    if (d > 9.0 && d < 11.0)
-    {
-        return 3;
-    }
-    return 0;
+    return static_cast<int>(floor(d / r.lane_width) + 1);
 }
 
 double Vehicle::getTargetD(int lane)
 {
-    if (lane == 1)
-    {
-        return 2.0;
-    }
-    else if (lane == 2)
-    {
-        return 6.0;
-    }
-    else if (lane == 3)
-    {
-        return 10.0;
-    }
+    return (lane - 1) * r.lane_width + r.lane_width / 2;
 }
 
 bool Vehicle::collidesWith(Vehicle &other, double time)

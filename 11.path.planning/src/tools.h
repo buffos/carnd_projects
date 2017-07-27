@@ -6,19 +6,9 @@
 #include <cmath>
 #include <vector>
 #include <math.h>
+#include "various_structs.h"
 
 using namespace std;
-
-struct WayPoint
-{
-	double x;
-	double y;
-	double s;
-	double dx;
-	double dy;
-
-	inline WayPoint(double x, double y, double s, double dx, double dy) : x(x), y(y), s(s), dx(dx), dy(dy) {}
-};
 
 namespace coords
 {

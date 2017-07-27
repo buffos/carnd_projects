@@ -226,7 +226,7 @@ double TrajectoryGenerator::maxAccelerationCost(Trajectory &tr, StateGoal &s, Ve
         double s_acc_at_time = p_s.evalAt(t, 2);
         max_acceleration = (s_acc_at_time > max_acceleration) ? s_acc_at_time : max_acceleration;
     }
-    double cost = logistic(max_acceleration / r.max_acceleration);
+    double cost = logistic(max_acceleration / r.rcfg.max_acceleration);
     return cost;
 }
 
@@ -240,7 +240,7 @@ double TrajectoryGenerator::maxJerkCost(Trajectory &tr, StateGoal &s, Vehicle &c
         double s_jerk_at_time = p_s.evalAt(t, 3);
         max_jerk = (s_jerk_at_time > max_jerk) ? s_jerk_at_time : max_jerk;
     }
-    double cost = logistic(max_jerk / r.max_jerk);
+    double cost = logistic(max_jerk / r.rcfg.max_jerk);
     return cost;
 }
 

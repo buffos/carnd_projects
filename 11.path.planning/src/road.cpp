@@ -56,7 +56,7 @@ vector<double> Road::distanceInFront(Vehicle &car, int lane)
     {
         if (car.getLane() == other_car.getLane())
         {
-            auto car_distance = coords::real_s_distance(car.s, other_car.s, max_s);
+            auto car_distance = coords::real_s_distance(car.s, other_car.s, rcfg.max_s);
 
             if (car_distance[0] < current_s && car_distance[1] == 2)
             { // car_distance[1] == 2 means other car (argument 2) in front
@@ -82,7 +82,7 @@ vector<double> Road::distanceBehind(Vehicle &car, int lane)
     {
         if (car.getLane() == other_car.getLane())
         {
-            auto car_distance = coords::real_s_distance(car.s, other_car.s, max_s);
+            auto car_distance = coords::real_s_distance(car.s, other_car.s, rcfg.max_s);
 
             if (car_distance[0] < current_s && car_distance[1] == 1)
             { // car_distance[1] == 1 means my car (argument 1) in front. so other_car is behind
@@ -103,7 +103,7 @@ double Road::closestVehicleAt(double s, double d, double time)
     for (auto &other_car : cars)
     {
         auto state = other_car.getStateAt(time);
-        double s_distance = coords::real_s_distance(state[0], s, max_s)[0]; // the first entry is the distance
+        double s_distance = coords::real_s_distance(state[0], s, rcfg.max_s)[0]; // the first entry is the distance
         double distance = sqrt(s_distance * s_distance + (state[1] - d) * (state[1] - d));
         if (distance < closest)
         {

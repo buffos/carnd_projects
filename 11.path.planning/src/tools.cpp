@@ -12,16 +12,16 @@ double coords::distance(double x1, double y1, double x2, double y2)
 	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-int coords::ClosestWaypoint(double x, double y, vector<double> maps_x, vector<double> maps_y)
+int coords::ClosestWaypoint(double x, double y, vector<WayPoint> &wp)
 {
 
 	double closestLen = 100000; //large number
 	int closestWaypoint = 0;
 
-	for (unsigned int i = 0; i < maps_x.size(); i++)
+	for (unsigned int i = 0; i < wp.size(); i++)
 	{
-		double map_x = maps_x[i];
-		double map_y = maps_y[i];
+		double map_x = wp[i].x;
+		double map_y = wp[i].y;
 		double dist = coords::distance(x, y, map_x, map_y);
 		if (dist < closestLen)
 		{
@@ -33,13 +33,13 @@ int coords::ClosestWaypoint(double x, double y, vector<double> maps_x, vector<do
 	return closestWaypoint;
 }
 
-int coords::NextWaypoint(double x, double y, double theta, vector<double> maps_x, vector<double> maps_y)
+int coords::NextWaypoint(double x, double y, double theta, vector<WayPoint> &wp)
 {
 
-	int closestWaypoint = coords::ClosestWaypoint(x, y, maps_x, maps_y);
+	int closestWaypoint = coords::ClosestWaypoint(x, y, wp);
 
-	double map_x = maps_x[closestWaypoint];
-	double map_y = maps_y[closestWaypoint];
+	double map_x = wp[closestWaypoint].x;
+	double map_y = wp[closestWaypoint].y;
 
 	double heading = atan2((map_y - y), (map_x - x));
 
@@ -54,21 +54,21 @@ int coords::NextWaypoint(double x, double y, double theta, vector<double> maps_x
 }
 
 // Transform from Cartesian x,y coordinates to Frenet s,d coordinates
-vector<double> coords::getFrenet(double x, double y, double theta, vector<double> maps_x, vector<double> maps_y)
+vector<double> coords::getFrenet(double x, double y, double theta, vector<WayPoint> &wp)
 {
-	int next_wp = coords::NextWaypoint(x, y, theta, maps_x, maps_y);
+	int next_wp = coords::NextWaypoint(x, y, theta, wp);
 
 	int prev_wp;
 	prev_wp = next_wp - 1;
 	if (next_wp == 0)
 	{
-		prev_wp = maps_x.size() - 1;
+		prev_wp = wp.size() - 1;
 	}
 
-	double n_x = maps_x[next_wp] - maps_x[prev_wp];
-	double n_y = maps_y[next_wp] - maps_y[prev_wp];
-	double x_x = x - maps_x[prev_wp];
-	double x_y = y - maps_y[prev_wp];
+	double n_x = wp[next_wp].x - wp[prev_wp].x;
+	double n_y = wp[next_wp].y - wp[prev_wp].y;
+	double x_x = x - wp[prev_wp].x;
+	double x_y = y - wp[prev_wp].y;
 
 	// find the projection of x onto n
 	double proj_norm = (x_x * n_x + x_y * n_y) / (n_x * n_x + n_y * n_y);
@@ -79,8 +79,8 @@ vector<double> coords::getFrenet(double x, double y, double theta, vector<double
 
 	//see if d value is positive or negative by comparing it to a center point
 
-	double center_x = 1000 - maps_x[prev_wp];
-	double center_y = 2000 - maps_y[prev_wp];
+	double center_x = 1000 - wp[prev_wp].x;
+	double center_y = 2000 - wp[prev_wp].y;
 	double centerToPos = distance(center_x, center_y, x_x, x_y);
 	double centerToRef = distance(center_x, center_y, proj_x, proj_y);
 
@@ -93,7 +93,7 @@ vector<double> coords::getFrenet(double x, double y, double theta, vector<double
 	double frenet_s = 0;
 	for (int i = 0; i < prev_wp; i++)
 	{
-		frenet_s += distance(maps_x[i], maps_y[i], maps_x[i + 1], maps_y[i + 1]);
+		frenet_s += distance(wp[i].x, wp[i].y, wp[i + 1].x, wp[i + 1].y);
 	}
 
 	frenet_s += distance(0, 0, proj_x, proj_y);
@@ -102,23 +102,23 @@ vector<double> coords::getFrenet(double x, double y, double theta, vector<double
 }
 
 // Transform from Frenet s,d coordinates to Cartesian x,y
-vector<double> coords::getXY(double s, double d, vector<double> maps_s, vector<double> maps_x, vector<double> maps_y)
+vector<double> coords::getXY(double s, double d, vector<WayPoint> &wp)
 {
 	int prev_wp = -1;
 
-	while (s > maps_s[prev_wp + 1] && (prev_wp < (int)(maps_s.size() - 1)))
+	while (s > wp[prev_wp + 1].s && (prev_wp < (int)(wp.size() - 1)))
 	{
 		prev_wp++;
 	}
 
-	int wp2 = (prev_wp + 1) % maps_x.size();
+	int wp2 = (prev_wp + 1) % wp.size();
 
-	double heading = atan2((maps_y[wp2] - maps_y[prev_wp]), (maps_x[wp2] - maps_x[prev_wp]));
+	double heading = atan2((wp[wp2].y - wp[prev_wp].y), (wp[wp2].x - wp[prev_wp].x));
 	// the x,y,s along the segment
-	double seg_s = (s - maps_s[prev_wp]);
+	double seg_s = (s - wp[prev_wp].s);
 
-	double seg_x = maps_x[prev_wp] + seg_s * cos(heading);
-	double seg_y = maps_y[prev_wp] + seg_s * sin(heading);
+	double seg_x = wp[prev_wp].x + seg_s * cos(heading);
+	double seg_y = wp[prev_wp].y + seg_s * sin(heading);
 
 	double perp_heading = heading - pi() / 2;
 

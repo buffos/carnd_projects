@@ -1,2 +1,3 @@
 $command = "cmake -P build.cmake"
-iex "& $command"
+Invoke-Expression "& $command"
+pause

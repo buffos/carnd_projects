@@ -1,5 +1,5 @@
-include_directories (${PROJECT_SOURCE_DIR}/src)
-
+file(GLOB test_files "*.cpp")
+set(sources ${test_files})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	
@@ -23,7 +23,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 
 
 
-add_executable(test_path test.cpp)
+add_executable(test_path ${sources})
 
 # linking (linux)
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")

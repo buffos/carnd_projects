@@ -10,7 +10,7 @@ DiscreteCurve CurveHandler::createCurveFromCoefficientsInFrenet(Trajectory &tr, 
     DiscreteCurve curve;
 
     double dt = tr.duration / (numberOfPoints - 1);
-    for (int i = 0; i < numberOfPoints; i++)
+    for (int i = 1; i <= numberOfPoints; i++)
     {
         curve.c_1.push_back(p_1.evalAt(dt * i, 0));
         curve.c_2.push_back(p_2.evalAt(dt * i, 0));
@@ -29,7 +29,7 @@ DiscreteCurve CurveHandler::createCurveFromCoefficientsInXY(Trajectory &tr, int 
     DiscreteCurve curve;
 
     double dt = tr.duration / (numberOfPoints - 1);
-    for (int i = 0; i < numberOfPoints; i++)
+    for (int i = 1; i <= numberOfPoints; i++)
     {
         double s = p_1.evalAt(dt * i, 0);
         double d = p_2.evalAt(dt * i, 0);

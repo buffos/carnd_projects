@@ -27,10 +27,10 @@ add_executable(test_path test.cpp)
 
 # linking (linux)
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	target_link_libraries(test_path planningLib z ssl uv uWS)
+	target_link_libraries(test_path planningLib z ssl uv uWS gtest gmock_main)
 endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 # linking (windows)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	target_link_libraries(test_path planningLib zlib ssleay32 libuv uWS)
+	target_link_libraries(test_path planningLib zlib ssleay32 libuv uWS gtest gmock_main)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

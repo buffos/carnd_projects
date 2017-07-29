@@ -5,6 +5,9 @@
 
 using namespace std;
 
+using ::testing::ElementsAre;
+using ::testing::DoubleNear;
+
 
 class VehicleTest : public ::testing::Test {
 protected:
@@ -42,6 +45,10 @@ TEST_F(VehicleTest, hasInitialValues) {
 	EXPECT_STREQ(v0_.mode.c_str(), "KL");
 	EXPECT_EQ(v0_.previousCurve.c_1.size(), 0);
 	EXPECT_EQ(v0_.r.lanes, 3); // rcfg is the default one
+	EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0)); 
+	EXPECT_THAT(v0_.currentGoal.start_d, ElementsAre(0, 0, 0));
+	EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0));
+	EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0));
 }
 
 
@@ -60,6 +67,10 @@ TEST_F(VehicleTest, initializesFromJson) {
 	EXPECT_STREQ(v1_.mode.c_str(), "KL");
 	EXPECT_EQ(v1_.previousCurve.c_1.size(), 0);
 	EXPECT_NE(chrono::duration_cast<std::chrono::microseconds>(v1_.time - chrono::steady_clock::now()).count(), 0);
+	EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0));
+	EXPECT_THAT(v0_.currentGoal.start_d, ElementsAre(0, 0, 0));
+	EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0));
+	EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0));
 }
 
 TEST_F(VehicleTest, returnsTheCorrectLaneNumber) {
@@ -79,27 +90,16 @@ TEST_F(VehicleTest, returnsTheCorrectLaneNumber) {
 TEST_F(VehicleTest, returnsTheCorrectStateAtTime) {
 	auto state = v1_.getStateAt(0);
 
-	EXPECT_EQ(state[0], 2);
-	EXPECT_EQ(state[1], 124.8336); // new s
-	EXPECT_EQ(state[2], 0.0); // new v
-	EXPECT_EQ(state[3], 0.0); // new acc
+	EXPECT_THAT(state, ElementsAre(2, 124.8336, 0.0, 0.0)); // lane , s, v, acc
 
 	v1_.speed = 10; // m/s
 	v1_.acc = 0.5;
 	state = v1_.getStateAt(1); // state after 1 sec
 
-	EXPECT_EQ(state[0], 2);
-	EXPECT_DOUBLE_EQ(state[1], 124.8336 + 10*1 + 0.5*1/2); // new s
-	EXPECT_EQ(state[2], 10.5); // new v
-	EXPECT_EQ(state[3], 0.5); // new acc
+	EXPECT_THAT(state, ElementsAre(2, DoubleNear(124.8336 + 10 * 1 + 0.5 * 1 / 2, 0.1), 10.5, 0.5)); // lane , s, v, acc
 
 	state = v1_.getStateAt(2); // state after 2 sec
-
-	EXPECT_EQ(state[0], 2);
-	EXPECT_DOUBLE_EQ(state[1], 124.8336 + 10 * 2 + 0.5 * 2*2 / 2); // new s
-	EXPECT_EQ(state[2], 11.0); // new v
-	EXPECT_EQ(state[3], 0.5); // new acc
-
+	EXPECT_THAT(state, ElementsAre(2, DoubleNear(124.8336 + 10 * 2 + 0.5 * 2 * 2 / 2, 0.1), 11.0, 0.5)); // lane , s, v, acc
 }
 
 TEST_F(VehicleTest, checksCollisionAtTime) {

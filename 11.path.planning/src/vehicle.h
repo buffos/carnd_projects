@@ -23,6 +23,7 @@ struct Vehicle
     double acc = 0;
     chrono::steady_clock::time_point time;
     DiscreteCurve previousCurve;
+    StateGoal currentGoal;
     double end_s = 0;
     double end_d = 0;
     bool init_clock = false;

@@ -1,11 +1,12 @@
 #include "vehicle.h"
 #include "spline.h"
+#include "tools.h"
 
 Vehicle::Vehicle() : x(0), y(0), s(0), d(0), yaw(0), speed(0) {}
 
 Vehicle::Vehicle(double x, double y, double s, double d, double yaw, double speed) : x(x), y(y), s(s), d(d), yaw(yaw), speed(speed) {}
 
-Vehicle::Vehicle(json j, int index) : Vehicle(j[index]["x"], j[index]["y"], j[index]["s"], j[index]["d"], j[index]["yaw"], j[index]["speed"]) {}
+Vehicle::Vehicle(json j, int index, bool yawInDegrees) { updateData(j, index, yawInDegrees); }
 
 Vehicle::Vehicle(const Vehicle &car)
 {
@@ -23,7 +24,7 @@ Vehicle::Vehicle(const Vehicle &car)
     init_clock = true;
 }
 
-void Vehicle::updateData(json j, int index)
+void Vehicle::updateData(json j, int index, bool yawInDegrees)
 {
     if (!init_clock)
     {
@@ -34,7 +35,7 @@ void Vehicle::updateData(json j, int index)
     else
     {
         chrono::steady_clock::time_point newTime = std::chrono::steady_clock::now();
-        double dt = 0.001 * chrono::duration_cast<std::chrono::microseconds>(newTime - time).count(); // in sec
+        double dt = chrono::duration_cast<std::chrono::seconds>(newTime - time).count(); // in sec
         time = newTime;
         acc = (j[index]["speed"] - speed) / dt; // calculate acceleration based on dSpeed/dt
     }
@@ -43,8 +44,8 @@ void Vehicle::updateData(json j, int index)
     y = j[index]["y"];
     s = j[index]["s"];
     d = j[index]["d"];
-    yaw = j[index]["yaw"];
     speed = j[index]["speed"];
+    yaw = (yawInDegrees) ? coords::deg2rad(j[index]["yaw"]) : j[index]["yaw"];
 }
 
 void Vehicle::readPreviousPath(json j, int index)
@@ -63,7 +64,7 @@ void Vehicle::useRoadConfiguration(RoadConfiguration rcfg)
 
 int Vehicle::getLane()
 {
-    if (d < 0 or d > r.lane_width * r.lanes)
+    if (d <= 0 or d >= r.lane_width * r.lanes)
     {
         return 0;
     }

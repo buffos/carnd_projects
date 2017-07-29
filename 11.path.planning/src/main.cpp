@@ -43,7 +43,7 @@ int main()
 
 	// const string map_file_ = "../data/highway_map.csv"; // Waypoint map to read from
 	const string map_file_ = "C:/Users/buffo/Code/python/prj - selfDrivingCars/carnd-project/11.path.planning/data/highway_map.csv"; // Waypoint map to read from
-	const double max_s = 6945.554;						// The max s value before wrapping around the track back to 0
+	const double max_s = 6945.554;																									 // The max s value before wrapping around the track back to 0
 
 	Vehicle car;
 	Road road;
@@ -71,7 +71,7 @@ int main()
 
 				if (event == "telemetry")
 				{
-					car.updateData(j, 1);												   // localization Data from json object at position 1 (main car).
+					car.updateData(j, 1, true);											   // localization Data from json object at position 1 (main car). YAW is in degrees so we must convert.
 					road.updateData(j);													   // Sensor Fusion Data, a list of all other cars on the same side of the road.
 					car.readPreviousPath(j);											   // reads previous path, end_path data
 					auto newMode = plan.select_mode(car, road);							   // select a new best state for the car on the road

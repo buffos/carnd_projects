@@ -1,3 +1,4 @@
+include_directories (${PROJECT_SOURCE_DIR}/src)
 file(GLOB test_files "*.cpp")
 set(sources ${test_files})
 

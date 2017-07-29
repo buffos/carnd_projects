@@ -54,7 +54,7 @@ vector<double> Road::distanceInFront(Vehicle &car, int lane)
     double other_car_length = car.carLength;
     for (auto &&other_car : cars)
     {
-        if (car.getLane() == other_car.getLane())
+        if (lane == other_car.getLane())
         {
             auto car_distance = coords::real_s_distance(car.s, other_car.s, rcfg.max_s);
 
@@ -67,7 +67,11 @@ vector<double> Road::distanceInFront(Vehicle &car, int lane)
         }
     }
     // s treats car like points so add the physical half lenghts
-    current_s -= (car.carLength + other_car_length) * 0.5;
+    if (current_s != 9999999.0)
+    { // only if there was some car found
+        current_s -= (car.carLength + other_car_length) * 0.5;
+    }
+
     return vector<double>{current_s, speed_carInFront};
 }
 
@@ -80,7 +84,7 @@ vector<double> Road::distanceBehind(Vehicle &car, int lane)
     double other_car_length = car.carLength;
     for (auto &other_car : cars)
     {
-        if (car.getLane() == other_car.getLane())
+        if (lane == other_car.getLane())
         {
             auto car_distance = coords::real_s_distance(car.s, other_car.s, rcfg.max_s);
 
@@ -93,7 +97,10 @@ vector<double> Road::distanceBehind(Vehicle &car, int lane)
         }
     }
     // s treats car like points so add the physical half lenghts
-    current_s -= (car.carLength + other_car_length) * 0.5;
+    if (current_s != 9999999.0)
+    { // only if there was some car found
+        current_s -= (car.carLength + other_car_length) * 0.5;
+    }
     return vector<double>{current_s, speed_carBehind};
 }
 
@@ -103,8 +110,8 @@ double Road::closestVehicleAt(double s, double d, double time)
     for (auto &other_car : cars)
     {
         auto state = other_car.getStateAt(time);
-        double s_distance = coords::real_s_distance(state[0], s, rcfg.max_s)[0]; // the first entry is the distance
-        double distance = sqrt(s_distance * s_distance + (state[1] - d) * (state[1] - d));
+        double s_distance = coords::real_s_distance(state[1], s, rcfg.max_s)[0];                 // the second entry is the distance
+        double distance = sqrt(s_distance * s_distance + (other_car.d - d) * (other_car.d - d)); // we do not predict d change (we should)
         if (distance < closest)
         {
             closest = distance;

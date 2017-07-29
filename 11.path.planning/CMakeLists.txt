@@ -27,4 +27,14 @@ add_subdirectory(src)
 add_subdirectory(test)
 
 enable_testing ()
-add_test (NAME MyTest COMMAND test_path)
+add_test (NAME MyTest COMMAND test_path --gtest_output=xml:report.xml)
+
+add_custom_target(check 
+        ${CMAKE_COMMAND} -E echo CWD=${CMAKE_BINARY_DIR}
+        COMMAND ${CMAKE_COMMAND} -E echo CMD=${CMAKE_CTEST_COMMAND} -C $<CONFIG>
+        COMMAND ${CMAKE_COMMAND} -E echo ----------------------------------
+        COMMAND ${CMAKE_COMMAND} -E env CTEST_OUTPUT_ON_FAILURE=1
+            ${CMAKE_CTEST_COMMAND} -C $<CONFIG>
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    DEPENDS ALL_BUILD
+    )

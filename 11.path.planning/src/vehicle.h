@@ -30,10 +30,10 @@ struct Vehicle
 
     Vehicle();
     Vehicle(double x, double y, double s, double d, double yaw, double speed);
-    Vehicle(json j, int index = 1);
+    Vehicle(json j, int index = 1, bool yawInDegrees = false); // if yawInDegrees it will be converted to rads
     Vehicle(const Vehicle &car);
 
-    void updateData(json j, int index = 1);
+    void updateData(json j, int index = 1, bool yawInDegrees = false);
     void readPreviousPath(json j, int index = 1);
     void useRoadConfiguration(RoadConfiguration rcfg);
 
@@ -42,7 +42,7 @@ struct Vehicle
     // predictions
     bool collidesWith(Vehicle &other, double time = 0);
     pair<bool, int> willCollideWith(Vehicle &other, int timesteps, double dt);
-    vector<double> getStateAt(double time);
+    vector<double> getStateAt(double time); // returns {lane, new_s, new_v, acc}
 };
 
 #endif // !VEHICLE_H

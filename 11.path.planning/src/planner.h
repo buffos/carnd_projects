@@ -24,6 +24,7 @@ struct Planner
     double costKeepLane(Vehicle &car, Road &r);
     double costMatchFrontSpeed(Vehicle &car, Road &r);
     double costSpeed(Vehicle &car, double desiredSpeed, double freeRoadAhead, double speedCarInFront);
+    double costSpace(Vehicle &car, double spaceNeeded, double spaceInFront, double spaceBehind);
 
     // realize modes by creating start and end goals for s and d
     StateGoal realizePlan(string mode, Vehicle &car, Road &r);
@@ -31,6 +32,8 @@ struct Planner
     StateGoal realizeMatchFront(Vehicle &car, Road &r);
     StateGoal realizeChangeLeft(Vehicle &car, Road &r);
     StateGoal realizeChangeRight(Vehicle &car, Road &r);
+
+    vector<double> endGoalFromTargetVelocity(Vehicle &car, Road&r , double targetVelocity);
 };
 
 #endif // !PLANNER_H

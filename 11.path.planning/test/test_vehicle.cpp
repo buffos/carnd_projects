@@ -47,10 +47,9 @@ TEST_F(VehicleTest, hasInitialValues) {
 	EXPECT_EQ(v0_.r.lanes, 3); // rcfg is the default one
 	EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0)); 
 	EXPECT_THAT(v0_.currentGoal.start_d, ElementsAre(0, 0, 0));
-	EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0));
-	EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0));
+	EXPECT_THAT(v0_.currentGoal.end_s, ElementsAre(0, 0, 0));
+	EXPECT_THAT(v0_.currentGoal.end_d, ElementsAre(0, 0, 0));
 }
-
 
 TEST_F(VehicleTest, initializesFromJson) {
 	EXPECT_EQ(v1_.carLength, 5.0);
@@ -69,8 +68,8 @@ TEST_F(VehicleTest, initializesFromJson) {
 	EXPECT_NE(chrono::duration_cast<std::chrono::microseconds>(v1_.time - chrono::steady_clock::now()).count(), 0);
 	EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0));
 	EXPECT_THAT(v0_.currentGoal.start_d, ElementsAre(0, 0, 0));
-	EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0));
-	EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0));
+	EXPECT_THAT(v0_.currentGoal.end_s, ElementsAre(0, 0, 0));
+	EXPECT_THAT(v0_.currentGoal.end_d, ElementsAre(0, 0, 0));
 }
 
 TEST_F(VehicleTest, returnsTheCorrectLaneNumber) {

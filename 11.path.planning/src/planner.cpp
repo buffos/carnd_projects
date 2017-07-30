@@ -61,8 +61,7 @@ double Planner::costLaneChangeLeft(Vehicle &car, Road &r)
     {
         return maxCost;
     }
-    double spaceNeeded = nearBuffer;
-    double costForSpace = spaceNeeded / frontDistance + spaceNeeded / behindDistance - 2 * spaceNeeded;
+    double costForSpace = costSpace(car, nearBuffer, frontDistance, behindDistance);
     // this is exactly zero when I have nearBuffer space both in front and behind the vehicle
     double costforSpeed = costSpeed(car, r.rcfg.target_speed, frontDistance, frontSpeed);
     return costForSpace + costforSpeed;
@@ -88,8 +87,7 @@ double Planner::costLaneChangeRight(Vehicle &car, Road &r)
     {
         return maxCost;
     }
-    double spaceNeeded = nearBuffer;
-    double costForSpace = spaceNeeded / frontDistance + spaceNeeded / behindDistance - 2 * spaceNeeded;
+    double costForSpace = costSpace(car, nearBuffer, frontDistance, behindDistance);
     // this is exactly zero when I have nearBuffer space both in front and behind the vehicle
     double costforSpeed = costSpeed(car, r.rcfg.target_speed, frontDistance, frontSpeed);
     return costForSpace + costforSpeed;
@@ -105,8 +103,7 @@ double Planner::costKeepLane(Vehicle &car, Road &r)
     {
         return maxCost;
     }
-    double spaceNeeded = nearBuffer;
-    double costForSpace = spaceNeeded / frontDistance;
+    double costForSpace = costSpace(car, nearBuffer, frontDistance, 0.0);
     double costforSpeed = costSpeed(car, r.rcfg.target_speed, frontDistance, frontSpeed);
     return costForSpace + costforSpeed;
 }
@@ -120,8 +117,8 @@ double Planner::costMatchFrontSpeed(Vehicle &car, Road &r)
     double frontDistance = frontResults[0];
     double frontSpeed = frontResults[1];
 
-    if (frontSpeed < r.rcfg.target_speed)
-    { // the front car is moving slower than my target speed
+    if (frontSpeed < r.rcfg.target_speed && frontSpeed <= car.speed)
+    { // the front car is moving slower than my target speed and slower than me.
         slowDownCost = 100 * (r.rcfg.target_speed - frontSpeed);
     }
     return slowDownCost;
@@ -139,6 +136,41 @@ double Planner::costSpeed(Vehicle &car, double desiredSpeed, double freeRoadAhea
         double timeToReachFrontCar = (freeRoadAhead - nearBuffer) / relativeSpeed;
         return 100 * timeToReachFrontCar;
     }
+}
+
+double Planner::costSpace(Vehicle &car, double spaceNeeded, double spaceInFront, double spaceBehind)
+{
+    double cost;
+
+    if (spaceBehind == 0.0 && spaceInFront == 0.0)
+    {
+        return maxCost; // collision
+    }
+
+    if (spaceBehind == 0.0)
+    {
+        cost = spaceNeeded / spaceInFront;
+    }
+    else if (spaceInFront == 0)
+    {
+        cost = spaceNeeded / spaceBehind;
+    }
+    else
+    {
+        cost = spaceNeeded / spaceInFront + spaceNeeded / spaceBehind;
+    }
+    return 1000 * cost;
+}
+
+vector<double> Planner::endGoalFromTargetVelocity(Vehicle &car, Road &r, double targetVelocity)
+{
+    double newAcceleration = (targetVelocity - car.speed) / planDuration;
+    newAcceleration = (newAcceleration < r.rcfg.max_acceleration) ? newAcceleration : r.rcfg.max_acceleration; // not more than max.acceleration
+    double newJerk = (newAcceleration - car.acc) / planDuration;
+    double newSpeed = car.speed + car.acc * planDuration + newJerk * pow(planDuration, 2) / 2.;
+    double new_S = car.s + car.speed * planDuration + car.acc * pow(planDuration, 2) / 2 + newJerk * pow(planDuration, 3) / 6;
+
+    return vector<double>{new_S, newSpeed, newAcceleration};
 }
 
 StateGoal Planner::realizePlan(string mode, Vehicle &car, Road &r)
@@ -159,21 +191,21 @@ StateGoal Planner::realizePlan(string mode, Vehicle &car, Road &r)
     {
         return realizeChangeRight(car, r);
     }
+    else
+    {
+        return realizeKeepLane(car, r); // default if wrong mode is selected.
+    }
 }
 
 StateGoal Planner::realizeKeepLane(Vehicle &car, Road &r)
 {
     StateGoal goal;
-    double newAcceleration = (r.rcfg.target_speed - car.speed) / planDuration;
+
     goal.start_s = {car.s, car.speed, car.acc};
     goal.start_d = {car.d, 0.0, 0.0};
 
     goal.end_d = {car.getTargetD(car.getLane()), 0.0, 0.0}; // maybe the car is not centered so center it
-    goal.end_s = {
-        car.s + 0.5 * (r.rcfg.target_speed + car.speed) * planDuration, // just do algebra on vT + 0.5(targetV - v)*T^2/T
-        r.rcfg.target_speed,
-        newAcceleration};
-    goal.end_d = {car.d, 0.0, 0.0};
+    goal.end_s = std::move(endGoalFromTargetVelocity(car, r, r.rcfg.target_speed));
     // no lateral movement so d is the default zero everywhere
     return goal;
 }
@@ -186,15 +218,11 @@ StateGoal Planner::realizeMatchFront(Vehicle &car, Road &r)
     double frontDistance = frontResults[0];
     double frontSpeed = frontResults[1];
 
-    double newAcceleration = (frontSpeed - car.speed) / planDuration;
     goal.start_s = {car.s, car.speed, car.acc};
     goal.start_d = {car.d, 0.0, 0.0};
 
     goal.end_d = {car.getTargetD(car.getLane()), 0.0, 0.0};
-    goal.end_s = {
-        car.s + 0.5 * (frontSpeed + car.speed) * planDuration,
-        frontSpeed,
-        newAcceleration};
+    goal.end_s = std::move(endGoalFromTargetVelocity(car, r, frontSpeed));
     return goal;
 }
 
@@ -205,15 +233,12 @@ StateGoal Planner::realizeChangeLeft(Vehicle &car, Road &r)
     goal.start_s = {car.s, car.speed, car.acc};
     goal.start_d = {car.d, 0.0, 0.0};
 
-    goal.end_s = {
-        car.s + car.speed * planDuration,
-        car.speed,
-        0};
+    goal.end_s = std::move(endGoalFromTargetVelocity(car, r, car.speed)); // keep the same speed
     double delta_d = car.d - r.rcfg.lane_width;
-    double delta_v = delta_d / planDuration;
-    double delta_g = delta_v / planDuration;
+    // double delta_v = delta_d / planDuration;
+    // double delta_g = delta_v / planDuration;
 
-    goal.end_d = {delta_d, delta_v, delta_g};
+    goal.end_d = {delta_d, 0.0, 0.0}; // I want have zero perpendicular speed at the end
     return goal;
 }
 
@@ -223,14 +248,11 @@ StateGoal Planner::realizeChangeRight(Vehicle &car, Road &r)
     goal.start_s = {car.s, car.speed, car.acc};
     goal.start_d = {car.d, 0.0, 0.0};
 
-    goal.end_s = {
-        car.s + car.speed * planDuration,
-        car.speed,
-        0};
+    goal.end_s = std::move(endGoalFromTargetVelocity(car, r, car.speed)); // keep the same speed
     double delta_d = car.d + r.rcfg.lane_width;
-    double delta_v = delta_d / planDuration;
-    double delta_g = delta_v / planDuration;
+    // double delta_v = delta_d / planDuration;
+    // double delta_g = delta_v / planDuration;
 
-    goal.end_d = {delta_d, delta_v, delta_g};
+    goal.end_d = {delta_d, 0.0, 0.0}; // I want have zero perpendicular speed at the end
     return goal;
 }

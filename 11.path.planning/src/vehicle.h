@@ -9,6 +9,9 @@
 using json = nlohmann::json;
 using namespace std;
 
+// from mph to m/s
+inline double MPH_to_MPS(double speed) { return speed * 0.44704; }
+
 struct Vehicle
 {
     double carLength = 5.0;

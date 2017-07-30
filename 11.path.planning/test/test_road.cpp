@@ -52,7 +52,6 @@ TEST_F(RoadTest, correctlyImportingSensorFusion) {
 	EXPECT_NEAR(road.cars[1].yaw, -0.05619142 / 20.84263, 0.001);
 }
 
-
 TEST_F(RoadTest, correctlyFindClosestVehicleInFront) {
 	auto d1 = road.distanceInFront(v1_, 1);
 	auto d2 = road.distanceInFront(v1_, 2);

@@ -44,7 +44,7 @@ void Vehicle::updateData(json j, int index, bool yawInDegrees)
     y = j[index]["y"];
     s = j[index]["s"];
     d = j[index]["d"];
-    speed = j[index]["speed"];
+    speed = MPH_to_MPS(j[index]["speed"]); // json gives the values in MPH. Only used by ego_car
     yaw = (yawInDegrees) ? coords::deg2rad(j[index]["yaw"]) : j[index]["yaw"];
 }
 

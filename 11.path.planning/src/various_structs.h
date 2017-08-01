@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include "spline.h"
+#include "constants.h"
 
 using json = nlohmann::json;
 
@@ -12,14 +13,14 @@ using namespace std;
 
 struct RoadConfiguration
 {
-	double max_s = 6945.554;		// in meters after that its a loop
-	double max_speed = 23.0;		// 60mph = 26.82m/s
-	double target_speed = 20.0;		// 50mph = 22.352m/s
-	double max_acceleration = 10.0; // 10m/s^2
-	double max_jerk = 30.0;			// 50/m/s^3
-	int frames = 50;				// 50 frames per second
-	int lanes = 3;					// 3 lanes default value
-	double lane_width = 4.0;		// 4m default width lane
+	double max_s = 6945.554;							   // in meters after that its a loop
+	double max_speed = constants::MAX_SPEED;			   // 60mph = 26.82m/s
+	double target_speed = constants::TARGET_SPEED;		   // 50mph = 22.352m/s
+	double max_acceleration = constants::MAX_ACCELERATION; // 10m/s^2
+	double max_jerk = constants::MAX_JERK;				   // 50/m/s^3
+	int frames = constants::FRAMES_PER_SEC;				   // 50 frames per second
+	int lanes = constants::DEFAULT_LANES;				   // 3 lanes default value
+	double lane_width = constants::DEFAULT_LANE_WIDTH;	   // 4m default width lane
 };
 
 struct StateGoal
@@ -108,13 +109,13 @@ struct DiscreteCurve
 		string y;
 		if (coordinateSystem == 1)
 		{
-			cout << "Curve in XY coordinates "<< endl;
+			cout << "Curve in XY coordinates " << endl;
 			x = " x: ";
 			y = " y: ";
 		}
 		else
 		{
-			cout << "Curve in Frenet coordinates "<< endl;
+			cout << "Curve in Frenet coordinates " << endl;
 			x = " s: ";
 			y = " d: ";
 		}
@@ -149,13 +150,14 @@ struct DiscreteCurve
 	}
 };
 
-struct Splines {
+struct Splines
+{
 	tk::spline x;
 	tk::spline y;
 	tk::spline dx;
 	tk::spline dy;
 
 	double start_s;
-	double end_s
+	double end_s;
 };
 #endif //! VARIOUS_STRUCTS_H

@@ -134,7 +134,7 @@ double Planner::costSpeed(Vehicle &car, double desiredSpeed, double freeRoadAhea
 	else
 	{
 		double timeToReachFrontCar = (freeRoadAhead - nearBuffer) / relativeSpeed;
-		return 100 * timeToReachFrontCar;
+		return constants::WEIGHT_NEED_FOR_SPEED * timeToReachFrontCar;
 	}
 }
 
@@ -159,7 +159,7 @@ double Planner::costSpace(Vehicle &car, double spaceNeeded, double spaceInFront,
 	{
 		cost = spaceNeeded / spaceInFront + spaceNeeded / spaceBehind;
 	}
-	return 1000 * cost;
+	return constants::WEIGHT_NEED_FOR_SPACE * cost;
 }
 
 vector<double> Planner::endGoalFromTargetVelocity(Vehicle &car, Road &r, double targetVelocity)
@@ -181,7 +181,7 @@ vector<double> Planner::endGoalFromTargetVelocity(Vehicle &car, Road &r, double 
 		targetVelocity -= correctedSpeed;
 	}
 	double newSpeed = targetVelocity;
-	double new_S = car.s + car.speed * planDuration + newAcceleration * pow(planDuration, 2) / 2 ;
+	double new_S = car.s + car.speed * planDuration + newAcceleration * pow(planDuration, 2) / 2;
 
 	return vector<double>{new_S, newSpeed, newAcceleration};
 }
@@ -249,7 +249,7 @@ StateGoal Planner::realizeChangeLeft(Vehicle &car, Road &r)
 	goal.start_d = {car.d, 0.0, 0.0};
 
 	goal.end_s = std::move(endGoalFromTargetVelocity(car, r, car.speed)); // keep the same speed
-	goal.end_d = {delta_d, 0.0, 0.0}; // I want have zero perpendicular speed at the end
+	goal.end_d = {delta_d, 0.0, 0.0};									  // I want have zero perpendicular speed at the end
 	return goal;
 }
 
@@ -262,7 +262,7 @@ StateGoal Planner::realizeChangeRight(Vehicle &car, Road &r)
 	goal.start_d = {car.d, 0.0, 0.0};
 
 	goal.end_s = std::move(endGoalFromTargetVelocity(car, r, car.speed)); // keep the same speed
-	goal.end_d = {delta_d, 0.0, 0.0}; // I want have zero perpendicular speed at the end
+	goal.end_d = {delta_d, 0.0, 0.0};									  // I want have zero perpendicular speed at the end
 
 	return goal;
 }

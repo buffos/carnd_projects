@@ -9,17 +9,18 @@
 #include "polynomial.h"
 #include "planner.h"
 #include "various_structs.h"
+#include "constants.h"
 
 using namespace std;
 
 struct TrajectoryGenerator
 {
-    double sigma = 0.05;        // use 5% of the goal value as a standard deviation
-    double timestep = 0.02;     // in seconds
-    double planDuration = 1.0; // in seconds. the original plan duration
-    double numberOfSamples = 10;
+    double sigma = constants::STD_DEVIATION;        // use 5% of the goal value as a standard deviation
+    double timestep = 1. / constants::FRAMES_PER_SEC;     // in seconds
+    double planDuration = constants::PLAN_DURATION; // in seconds. the original plan duration
+    double numberOfSamples = constants::SAMPLE_TRAJECTORIES;
 
-	TrajectoryGenerator(double planDuration=1.0, int FramesPerSecond=50, int numberofSamples = 10);
+	TrajectoryGenerator(double planDuration=1.0, int FramesPerSecond=50, int numberOfSamples = 10);
     Trajectory generateTrajectory(StateGoal &s, Vehicle &car, Road &r);
     vector<StateGoal> perturbGoal(StateGoal &goalState, Road &r);
     vector<double> jmt(StateGoal &s, double time, int s_or_d = 1); // 1 is s , 2 means d

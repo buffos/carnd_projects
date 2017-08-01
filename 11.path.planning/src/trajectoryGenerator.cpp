@@ -250,13 +250,13 @@ double TrajectoryGenerator::totalCost(Trajectory &tr, StateGoal &s, Vehicle &car
 {
 	double cost = 0;
 
-	cost += 1.0 * timeDifferenceCost(tr, s, car, r);
-	cost += 100 * s_DifferenceCost(tr, s, car, r);
-	cost += 10000 * d_DifferenceCost(tr, s, car, r);
-	cost += 1000000 * collisionCost(tr, s, car, r);
-	cost += 100 * bufferCost(tr, s, car, r);
-	cost += 5 * maxAccelerationCost(tr, s, car, r);
-	cost += 5 * maxJerkCost(tr, s, car, r);
+	cost += constants::WEIGHT_TIME_DIFFERENCE_COST * timeDifferenceCost(tr, s, car, r);
+	cost += constants::WEIGHT_S_DIFFERENCE_COST * s_DifferenceCost(tr, s, car, r);
+	cost += constants::WEIGHT_D_DIFFERENCE_COST * d_DifferenceCost(tr, s, car, r);
+	cost += constants::WEIGHT_COLLISION_COST * collisionCost(tr, s, car, r);
+	cost += constants::WEIGHT_BUFFER_COST * bufferCost(tr, s, car, r);
+	cost += constants::WEIGHT_MAX_ACCELERATION_COST * maxAccelerationCost(tr, s, car, r);
+	cost += constants::WEIGHT_MAX_JERK_COST * maxJerkCost(tr, s, car, r);
 
 	return cost;
 }

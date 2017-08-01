@@ -7,14 +7,15 @@
 #include "various_structs.h"
 #include "vehicle.h"
 #include "road.h"
+#include "constants.h"
 
 using namespace std;
 
 struct Planner
 {
-    double nearBuffer = 4; // need for safety a buffer from front and behind cars
-    double maxCost = 100000.0;
-    double planDuration = 5.0; // I plan ahead for that time.
+    double nearBuffer = constants::SAFETY_DISTANCE; // need for safety a buffer from front and behind cars
+    double maxCost = constants::MAX_COST;
+    double planDuration = constants::PLAN_DURATION; // I plan ahead for that time.
 
     static map<string, vector<string>> next_modes;
 

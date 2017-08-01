@@ -99,7 +99,7 @@ vector<double> coords::getFrenet(double x, double y, double theta, vector<WayPoi
 
 	frenet_s += distance(0, 0, proj_x, proj_y);
 
-	return { frenet_s, frenet_d };
+	return {frenet_s, frenet_d};
 }
 
 /// Transform from Frenet s,d coordinates to Cartesian x,y
@@ -126,7 +126,7 @@ vector<double> coords::getXY(double s, double d, vector<WayPoint> &wp)
 	double x = seg_x + d * cos(perp_heading);
 	double y = seg_y + d * sin(perp_heading);
 
-	return { x, y };
+	return {x, y};
 }
 
 /// The real distance between two cars , taking into account the track loop
@@ -169,25 +169,29 @@ vector<double> coords::real_s_distance(double s1, double s2, double trackLength)
 }
 
 /// Create a vector of indexes of Waypoint around the current position
-vector<int> coords::getLocalWayPointIndexes(int index, int back, int front, int wp_size) {
+vector<int> coords::getLocalWayPointIndexes(int index, int back, int front, int wp_size)
+{
 	// take K waypoints before and M ahead
 	int k = back;
 	int m = front;
 	int prev_wp = index;
 	vector<int> wp_indexes;
 	// i need k-1 more previous wp
-	for (int i = prev_wp - k + 1; i >= prev_wp; i--) {
+	for (int i = prev_wp - k + 1; i <= prev_wp; i++)
+	{
 		if (i < 0)
 		{
 			wp_indexes.push_back(i + wp_size); // at the beginning of the loop
 		}
-		else {
+		else
+		{
 			wp_indexes.push_back(i);
 		}
 	}
 	// now add m ahead
-	for (int i = prev_wp + 1; i <= prev_wp + m; i++) {
-		if (i > wp_size)
+	for (int i = prev_wp + 1; i <= prev_wp + m; i++)
+	{
+		if (i >= wp_size)
 		{
 			wp_indexes.push_back(i - wp_size); // at the end of the loop
 		}
@@ -200,7 +204,8 @@ vector<int> coords::getLocalWayPointIndexes(int index, int back, int front, int 
 }
 
 ///  Create around global Frenet Coordinate s a Spline
-Splines coords::createLocalSplines(double s, vector<WayPoint> &wp, double trackLength) {
+Splines coords::createLocalSplines(double s, vector<WayPoint> &wp, double trackLength)
+{
 	int prev_wp = -1;
 
 	while ((prev_wp < (int)(wp.size() - 1)) && s > wp[prev_wp + 1].s)
@@ -218,7 +223,8 @@ Splines coords::createLocalSplines(double s, vector<WayPoint> &wp, double trackL
 	vector<double> dx;
 	vector<double> dy;
 
-	for (auto index : indexes) {
+	for (auto index : indexes)
+	{
 		x.push_back(wp[index].x);
 		y.push_back(wp[index].y);
 		ss.push_back(wp[index].s);
@@ -231,12 +237,14 @@ Splines coords::createLocalSplines(double s, vector<WayPoint> &wp, double trackL
 	int first_wp = indexes[0];
 	int last_wp = indexes[indexes.size() - 1];
 
-
 	// trackLength = 6914.14925765991;
-	if (wp[first_wp].s > wp[last_wp].s) {
+	if (wp[first_wp].s > wp[last_wp].s)
+	{
 		// add max_s to all variables less than last element (which is the left most element)
-		for (auto element : ss) {
-			if (element < wp[first_wp].s) {
+		for (auto element : ss)
+		{
+			if (element < wp[first_wp].s)
+			{
 				element += trackLength;
 			}
 		}
@@ -254,35 +262,37 @@ Splines coords::createLocalSplines(double s, vector<WayPoint> &wp, double trackL
 }
 
 /// Evaluate a Spline Curve around {s,d} and get {x,y} coordinates
-vector<double> coords::evaluateSplineAtS(double s, double d, Splines sp, double trackLength) {
+vector<double> coords::evaluateSplineAtS(double s, double d, Splines sp, double trackLength)
+{
 	double x = 0.0;
 	double y = 0.0;
 
 	if (sp.start_s < sp.end_s) // this is a normal spline not at the end of the track
 	{
-		if (s >= sp.start_s && s <= sp.end_s) { // in the range
-			x = sp.x(s) + sp.dx(s) * d; // the contribution from S and the contribiution from d
+		if (s >= sp.start_s && s <= sp.end_s)
+		{								// in the range
+			x = sp.x(s) + sp.dx(s) * d; // the contribution from S and the contribution from d
 			y = sp.y(s) + sp.dy(s) * d;
-			return { x, y };
+			return {x, y};
 		}
 	}
-	else // we are at the loop of the track. I 
+	else // we are at the loop of the track. I
 	{
 		if (s > sp.start_s)
 		{
-			// since this is at the loop point if s > sp.start_s then its definately in the range
+			// since this is at the loop point if s > sp.start_s then its definitely in the range
 			// and there is also no need to add the extra max_s
-			x = sp.x(s) + sp.dx(s) * d; // the contribution from S and the contribiution from d
+			x = sp.x(s) + sp.dx(s) * d; // the contribution from S and the contribution from d
 			y = sp.y(s) + sp.dy(s) * d;
-			return { x, y };
+			return {x, y};
 		}
 		else if (s < sp.start_s && s < sp.end_s)
 		{
 			// this means that its also in the range but I must add max_s to retrieve the x, y values
-			x = sp.x(s + trackLength) + sp.dx(s + trackLength) * d; // the contribution from S and the contribiution from d
+			x = sp.x(s + trackLength) + sp.dx(s + trackLength) * d; // the contribution from S and the contribution from d
 			y = sp.y(s + trackLength) + sp.dy(s + trackLength) * d;
-			return { x, y };
+			return {x, y};
 		}
 	}
-	return { x, y };
+	return {x, y};
 }

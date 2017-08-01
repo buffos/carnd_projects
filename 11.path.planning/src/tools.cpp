@@ -1,6 +1,13 @@
 
 #include "tools.h"
 
+double logistic(double x)
+{
+	// A function that returns a value between 0 and 1 for x in the range [0, infinity]
+	//  and -1 to 1 for x in the range [-infinity, infinity].
+	return 2.0 / (1 + exp(-x)) - 1.0;
+}
+
 double coords::distance(double x1, double y1, double x2, double y2)
 {
 	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
@@ -47,7 +54,7 @@ int coords::NextWaypoint(double x, double y, double theta, vector<WayPoint> &wp)
 	return closestWaypoint;
 }
 
-// Transform from Cartesian x,y coordinates to Frenet s,d coordinates
+/// Transform from Cartesian x,y coordinates to Frenet s,d coordinates
 vector<double> coords::getFrenet(double x, double y, double theta, vector<WayPoint> &wp)
 {
 	int next_wp = coords::NextWaypoint(x, y, theta, wp);
@@ -92,15 +99,15 @@ vector<double> coords::getFrenet(double x, double y, double theta, vector<WayPoi
 
 	frenet_s += distance(0, 0, proj_x, proj_y);
 
-	return {frenet_s, frenet_d};
+	return { frenet_s, frenet_d };
 }
 
-// Transform from Frenet s,d coordinates to Cartesian x,y
+/// Transform from Frenet s,d coordinates to Cartesian x,y
 vector<double> coords::getXY(double s, double d, vector<WayPoint> &wp)
 {
 	int prev_wp = -1;
 
-	while (s > wp[prev_wp + 1].s && (prev_wp < (int)(wp.size() - 1)))
+	while ((prev_wp < (int)(wp.size() - 1)) && s > wp[prev_wp + 1].s)
 	{
 		prev_wp++;
 	}
@@ -119,9 +126,10 @@ vector<double> coords::getXY(double s, double d, vector<WayPoint> &wp)
 	double x = seg_x + d * cos(perp_heading);
 	double y = seg_y + d * sin(perp_heading);
 
-	return {x, y};
+	return { x, y };
 }
 
+/// The real distance between two cars , taking into account the track loop
 vector<double> coords::real_s_distance(double s1, double s2, double trackLength)
 {
 	double classicalDistance = abs(s1 - s2);
@@ -160,9 +168,121 @@ vector<double> coords::real_s_distance(double s1, double s2, double trackLength)
 	return vector<double>{realDistance, inFront};
 }
 
-double logistic(double x)
-{
-	// A function that returns a value between 0 and 1 for x in the range [0, infinity]
-	//  and -1 to 1 for x in the range [-infinity, infinity].
-	return 2.0 / (1 + exp(-x)) - 1.0;
+/// Create a vector of indexes of Waypoint around the current position
+vector<int> coords::getLocalWayPointIndexes(int index, int back, int front, int wp_size) {
+	// take K waypoints before and M ahead
+	int k = back;
+	int m = front;
+	int prev_wp = index;
+	vector<int> wp_indexes;
+	// i need k-1 more previous wp
+	for (int i = prev_wp - k + 1; i >= prev_wp; i--) {
+		if (i < 0)
+		{
+			wp_indexes.push_back(i + wp_size); // at the beginning of the loop
+		}
+		else {
+			wp_indexes.push_back(i);
+		}
+	}
+	// now add m ahead
+	for (int i = prev_wp + 1; i <= prev_wp + m; i++) {
+		if (i > wp_size)
+		{
+			wp_indexes.push_back(i - wp_size); // at the end of the loop
+		}
+		else
+		{
+			wp_indexes.push_back(i);
+		}
+	}
+	return wp_indexes;
+}
+
+///  Create around global Frenet Coordinate s a Spline
+Splines coords::createLocalSplines(double s, vector<WayPoint> &wp, double trackLength) {
+	int prev_wp = -1;
+
+	while ((prev_wp < (int)(wp.size() - 1)) && s > wp[prev_wp + 1].s)
+	{
+		prev_wp++;
+	}
+
+	int back = 5;
+	int front = 15;
+	auto indexes = std::move(getLocalWayPointIndexes(prev_wp, back, front, wp.size()));
+
+	vector<double> x;
+	vector<double> y;
+	vector<double> ss;
+	vector<double> dx;
+	vector<double> dy;
+
+	for (auto index : indexes) {
+		x.push_back(wp[index].x);
+		y.push_back(wp[index].y);
+		ss.push_back(wp[index].s);
+		dx.push_back(wp[index].dx);
+		dy.push_back(wp[index].dy);
+	}
+
+	// fix s values for looping case
+	// now i store the values of s that the spline struct can facilitate
+	int first_wp = indexes[0];
+	int last_wp = indexes[indexes.size() - 1];
+
+
+	// trackLength = 6914.14925765991;
+	if (wp[first_wp].s > wp[last_wp].s) {
+		// add max_s to all variables less than last element (which is the left most element)
+		for (auto element : ss) {
+			if (element < wp[first_wp].s) {
+				element += trackLength;
+			}
+		}
+	}
+
+	Splines sp;
+	sp.x.set_points(ss, x);
+	sp.y.set_points(ss, y);
+	sp.dx.set_points(ss, dx);
+	sp.dy.set_points(ss, dy);
+
+	sp.start_s = wp[first_wp].s;
+	sp.end_s = wp[last_wp].s;
+	return sp;
+}
+
+/// Evaluate a Spline Curve around {s,d} and get {x,y} coordinates
+vector<double> coords::evaluateSplineAtS(double s, double d, Splines sp, double trackLength) {
+	double x = 0.0;
+	double y = 0.0;
+
+	if (sp.start_s < sp.end_s) // this is a normal spline not at the end of the track
+	{
+		if (s >= sp.start_s && s <= sp.end_s) { // in the range
+			x = sp.x(s) + sp.dx(s) * d; // the contribution from S and the contribiution from d
+			y = sp.y(s) + sp.dy(s) * d;
+			return { x, y };
+		}
+	}
+	else // we are at the loop of the track. I 
+	{
+		if (s > sp.start_s)
+		{
+			// since this is at the loop point if s > sp.start_s then its definately in the range
+			// and there is also no need to add the extra max_s
+			x = sp.x(s) + sp.dx(s) * d; // the contribution from S and the contribiution from d
+			y = sp.y(s) + sp.dy(s) * d;
+			return { x, y };
+		}
+		else if (s < sp.start_s && s < sp.end_s)
+		{
+			// this means that its also in the range but I must add max_s to retrieve the x, y values
+			x = sp.x(s + trackLength) + sp.dx(s + trackLength) * d; // the contribution from S and the contribiution from d
+			y = sp.y(s + trackLength) + sp.dy(s + trackLength) * d;
+			return { x, y };
+		}
+	}
+	return { x, y };
 }

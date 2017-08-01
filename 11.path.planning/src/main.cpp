@@ -37,6 +37,8 @@ string hasData(string s)
 	return "";
 }
 
+
+
 int main()
 {
 	uWS::Hub h;
@@ -44,6 +46,8 @@ int main()
 	// const string map_file_ = "../data/highway_map.csv"; // Waypoint map to read from
 	const string map_file_ = "C:/Users/buffo/Code/python/prj - selfDrivingCars/carnd-project/11.path.planning/data/highway_map.csv"; // Waypoint map to read from
 	const double max_s = 6945.554;																									 // The max s value before wrapping around the track back to 0
+	string log_file = "I:/logger.txt";
+	ofstream out_log(log_file.c_str(), fstream::out);
 
 	Vehicle car;
 	Road road;
@@ -51,10 +55,13 @@ int main()
 	TrajectoryGenerator tr_generator;
 	CurveHandler curveHandler;
 
+	plan.planDuration = 15.0; // sec
+	tr_generator.planDuration = 15.0; // in sec
+
 	road.readWayPointsFromFile(map_file_);
 	car.useRoadConfiguration(road.rcfg); // tell the car to use the configuration of road (basically for
 
-	h.onMessage([&car, &road, &plan, &tr_generator, &curveHandler](uWS::WebSocket<uWS::SERVER> *ws, char *data, size_t length, uWS::OpCode opCode) {
+	h.onMessage([&car, &road, &plan, &tr_generator, &curveHandler, &out_log](uWS::WebSocket<uWS::SERVER> *ws, char *data, size_t length, uWS::OpCode opCode) {
 		// "42" at the start of the message means there's a websocket message event.
 		// The 4 signifies a websocket message. The 2 signifies a websocket event
 		// auto s_data = string(data).substr(0, length); cout << s_data << endl;
@@ -71,19 +78,42 @@ int main()
 
 				if (event == "telemetry")
 				{
-					car.updateData(j, 1, true);											   // localization Data from json object at position 1 (main car). YAW is in degrees so we must convert.
-					road.updateData(j);													   // Sensor Fusion Data, a list of all other cars on the same side of the road.
+					string msg;
+					DiscreteCurve newCurve;
+
 					car.readPreviousPath(j);											   // reads previous path, end_path data
-					auto newMode = plan.select_mode(car, road);							   // select a new best state for the car on the road
-					auto newGoal = plan.realizePlan(newMode, car, road);				   // apply the plan and get a new goal for the trajectory generator
-					auto trajectory = tr_generator.generateTrajectory(newGoal, car, road); // generate a new trajectory
-					auto newCurve = std::move(curveHandler.createCurveFromCoefficientsInXY(trajectory, road.rcfg.frames, road.wpts));
-					auto mergedCurve = std::move(curveHandler.mergeCurves(newCurve, car.previousCurve));
+					if (car.previousCurve.c_1.size() > 100)
+					{
+						newCurve = std::move(car.previousCurve);
+						
+					}
+					else
+					{
+						car.updateData(j, 1, true);											   // localization Data from json object at position 1 (main car). YAW is in degrees so we must convert.
+						road.updateData(j);													   // Sensor Fusion Data, a list of all other cars on the same side of the road.
+						car.printVehicle(out_log);
+						auto newMode = plan.select_mode(car, road);							   // select a new best state for the car on the road
+						// auto newGoal = plan.realizePlan(newMode, car, road);				   // apply the plan and get a new goal for the trajectory generator
+						auto newGoal = plan.realizePlan("MF", car, road);
+						newGoal.printGoal(out_log);
+						auto trajectory = tr_generator.generateTrajectory(newGoal, car, road); // generate a new trajectory
+						trajectory.printTrajectory(out_log);
+						newCurve = std::move(curveHandler.createCurveFromCoefficientsInXY(trajectory,  road.rcfg.frames * plan.planDuration, road.wpts));
+						// create a new curve and use 10 of the previous Curve points
+						out_log << "PREV CURVE " << endl;
+						car.previousCurve.printCurve(out_log);
+						out_log << "NEW CURVE " << endl;
+						newCurve.printCurve(out_log);
+						//mergedCurve = std::move(curveHandler.mergeCurves(newCurve, car.previousCurve));
+						//out_log << "MERGED CURVE " << endl;
+						//mergedCurve.printCurve(out_log);
+					}
 
-					string msg = "42[\"control\"," + mergedCurve.toJson() + "]";
+					 msg = "42[\"control\"," + newCurve.toJson() + "]";
 
-					//this_thread::sleep_for(chrono::milliseconds(1000));
+					
 					ws->send(msg.data(), msg.length(), uWS::OpCode::TEXT);
+					// this_thread::sleep_for(chrono::milliseconds(500));
 				}
 			}
 			else

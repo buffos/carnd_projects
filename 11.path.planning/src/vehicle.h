@@ -2,6 +2,7 @@
 #define VEHICLE_H
 
 #include "json.hpp"
+#include <fstream>
 #include <vector>
 #include <chrono>
 #include "various_structs.h"
@@ -24,12 +25,14 @@ struct Vehicle
     double yaw;
     double speed;
     double acc = 0;
+	double end_s = 0;
+	double end_d = 0;
+	bool init_clock = false;
     chrono::steady_clock::time_point time;
     DiscreteCurve previousCurve;
     StateGoal currentGoal;
-    double end_s = 0;
-    double end_d = 0;
-    bool init_clock = false;
+	Splines current_path;
+
     string mode = "KL"; // keep lane
 
     Vehicle();
@@ -37,9 +40,10 @@ struct Vehicle
     Vehicle(json j, int index = 1, bool yawInDegrees = false); // if yawInDegrees it will be converted to rads
     Vehicle(const Vehicle &car);
 
-    void updateData(json j, int index = 1, bool yawInDegrees = false);
-    void readPreviousPath(json j, int index = 1);
+    void updateData(json &j, int index = 1, bool yawInDegrees = false);
+    void readPreviousPath(json &j, int index = 1);
     void useRoadConfiguration(RoadConfiguration rcfg);
+    void printVehicle(ofstream &log);
 
     int getLane();
     double getTargetD(int lane);

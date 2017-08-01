@@ -35,22 +35,23 @@ Polynomial::Polynomial(vector<double> const &coeff)
 double Polynomial::evalAt(double x, int order)
 {
     double result = 0.0;
-    vector<double> &c = coefficients;
+    vector<double> *c = &coefficients;
     if (order == 1)
     {
-        c = d_coefficients;
+        c = &d_coefficients;
     }
     else if (order == 2)
     {
-        c = dd_coefficients;
+        c = &dd_coefficients;
     }
     else if (order == 3)
     {
-        c = ddd_coefficients;
+        c = &ddd_coefficients;
     }
-    for (unsigned int i = 0; i < c.size(); i++)
+    for (unsigned int i = 0; i < (*c).size(); i++)
     {
-        result += c[i] * pow(x, i);
+        result += (*c)[i] * pow(x, i);
     }
+    c = nullptr;
     return result;
 }

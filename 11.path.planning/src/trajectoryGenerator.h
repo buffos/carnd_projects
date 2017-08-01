@@ -14,13 +14,14 @@ using namespace std;
 
 struct TrajectoryGenerator
 {
-    double sigma = 0.2;        // use 20% of the goal value as a standard deviation
-    double timestep = 0.2;     // in seconds
+    double sigma = 0.05;        // use 5% of the goal value as a standard deviation
+    double timestep = 0.02;     // in seconds
     double planDuration = 1.0; // in seconds. the original plan duration
     double numberOfSamples = 10;
 
+	TrajectoryGenerator(double planDuration=1.0, int FramesPerSecond=50, int numberofSamples = 10);
     Trajectory generateTrajectory(StateGoal &s, Vehicle &car, Road &r);
-    vector<StateGoal> perturbGoal(StateGoal &goalState);
+    vector<StateGoal> perturbGoal(StateGoal &goalState, Road &r);
     vector<double> jmt(StateGoal &s, double time, int s_or_d = 1); // 1 is s , 2 means d
 
     // trajectory evaluation functions

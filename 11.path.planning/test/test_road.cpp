@@ -88,7 +88,7 @@ TEST_F(RoadTest, correctlyBehindClosestVehicleInFront) {
 	EXPECT_NEAR(d1[1], 1000000.0, 0.001); // speed
 
 	// for lane 2 , carId == 1
-	EXPECT_NEAR(d2[0], 124, 83336 - 70.32 - v1_.carLength, 0.1); // distance with carId: 2
+	EXPECT_NEAR(d2[0], 124.83336 - 70.32 - v1_.carLength, 0.1); // distance with carId: 2
 	EXPECT_NEAR(d2[1], 20.8427, 0.1); // speed
 
 	// for lane 3 , no car in lane 3 behind. just a car in front

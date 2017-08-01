@@ -19,6 +19,7 @@ protected:
 		v1_.updateData(j, 1);
 		v1_.readPreviousPath(j, 1);
 		v1_.useRoadConfiguration(rcfg);
+		plan.planDuration = 1.0;
 	}
 
 	// virtual void TearDown() {}
@@ -63,7 +64,7 @@ TEST_F(PlannerTest, correctlyCalculatesCostMatchFrontSpeed) {
 	v1_.speed = 19.4335 - 1; // match almost front car speed
 	EXPECT_EQ(plan.costMatchFrontSpeed(v1_, road), 0.0); // my car is stopped and the front car is faster.
 	v1_.speed = 19.4335; // match almost front car speed
-	EXPECT_NEAR(plan.costMatchFrontSpeed(v1_, road), 100 * (23 - 19.4335), 0.1); // my car is stopped and the front car is faster.
+	EXPECT_NEAR(plan.costMatchFrontSpeed(v1_, road), 100 * (road.rcfg.target_speed - 19.4335), 0.1); // my car is stopped and the front car is faster.
 
 }
 
@@ -89,17 +90,17 @@ TEST_F(PlannerTest, correctlyCalculatesCostChangeLaneRight) {
 	EXPECT_NEAR(d3[0], 117.36, 0.1); // distance with carId: 3
 	EXPECT_NEAR(d3[1], 19.6272, 0.001); // speed
 	double costForSpace = plan.costSpace(v1_, plan.nearBuffer, d3[0], 10000000.0); // I have plenty of space in front and behind
-	double costForSpeed = plan.costSpeed(v1_, 23, d3[0], d3[1]); // The cost to go to target speed in that lane.
+	double costForSpeed = plan.costSpeed(v1_, road.rcfg.target_speed, d3[0], d3[1]); // The cost to go to target speed in that lane.
 	EXPECT_NEAR(plan.costLaneChangeRight(v1_, road), costForSpace + costForSpeed, 0.01);
 	// now lets speed up and go fast
 	v1_.speed = 23; // at target speed
-	double timeToReachFrontVehicle = (d3[0] - plan.nearBuffer) / (23 - d3[1]); // distance / how faster I am going
+	double timeToReachFrontVehicle = (d3[0] - plan.nearBuffer) / (road.rcfg.target_speed - d3[1]); // distance / how faster I am going
 	costForSpeed = 100 * timeToReachFrontVehicle;
 	EXPECT_NEAR(plan.costLaneChangeRight(v1_, road), costForSpace + costForSpeed, 0.01);
 	// now lets go close to the vehicle
 	v1_.s = road.cars[3].s - v1_.carLength - 2; // just 2 meters away;
 	d3 = road.distanceInFront(v1_, 3); // recalulate distance inf ront
-	timeToReachFrontVehicle = (d3[0] - plan.nearBuffer) / (23 - d3[1]); // and recalculate cost for speed.
+	timeToReachFrontVehicle = (d3[0] - plan.nearBuffer) / (road.rcfg.target_speed - d3[1]); // and recalculate cost for speed.
 	costForSpeed = 100 * timeToReachFrontVehicle;
 	EXPECT_NEAR(plan.costLaneChangeRight(v1_, road), 2000 + costForSpeed, 0.01);
 }
@@ -135,59 +136,43 @@ TEST_F(PlannerTest, correctlySelectsMode) {
 }
 
 TEST_F(PlannerTest, correctlyRealizePlanKeepLane) {
-	v1_.speed = 20.0; // lets give some speed.
-	v1_.acc = 1;
+	v1_.speed = 10.0; // lets give some speed.
+	v1_.acc = 10;
 	auto newGoal = plan.realizeKeepLane(v1_, road);
 	EXPECT_THAT(newGoal.start_s, ElementsAreArray({ v1_.s , v1_.speed, v1_.acc }));
 	EXPECT_THAT(newGoal.start_d, ElementsAreArray({ v1_.d , 0.0, 0.0 })); // maybe d_speed should match local_yaw
-	double new_acc = (road.rcfg.target_speed - v1_.speed) / plan.planDuration;
-	double new_jerk = (new_acc - v1_.acc) / plan.planDuration;
-	double new_s = v1_.s + v1_.speed * plan.planDuration + v1_.acc * pow(plan.planDuration, 2) / 2. + new_jerk * pow(plan.planDuration, 3) / 6.;
-	double new_speed = v1_.speed + v1_.acc* plan.planDuration + new_jerk * pow(plan.planDuration, 2) / 2.;
-	EXPECT_THAT(newGoal.end_s, ElementsAreArray({ DoubleEq(new_s), DoubleEq(new_speed), DoubleEq(new_acc) }));
+	EXPECT_THAT(newGoal.end_s, ElementsAreArray({ DoubleNear(139.834, 0.1), DoubleNear(20.0, 0.1), DoubleNear(10.0, 0.1) }));
 	EXPECT_THAT(newGoal.end_d, ElementsAreArray({ 6.0, 0.0, 0.0 })); // I want to move to the center of the current lane as much as possible
 }
 
-TEST_F(PlannerTest, correctlyRealizePlanToMatchFrontVehicleSpeed){
-	v1_.speed = 20.0; // lets give some speed.
-	v1_.acc = 1;
+TEST_F(PlannerTest, correctlyRealizePlanToMatchFrontVehicleSpeed) {
+	v1_.speed = 10.0; // lets give some speed.
+	v1_.acc = 10.0;
 	auto newGoal = plan.realizeMatchFront(v1_, road);
 	EXPECT_THAT(newGoal.start_s, ElementsAreArray({ v1_.s , v1_.speed, v1_.acc }));
 	EXPECT_THAT(newGoal.start_d, ElementsAreArray({ v1_.d , 0.0, 0.0 })); // maybe d_speed should match local_yaw
-	double new_acc = (road.cars[2].speed - v1_.speed) / plan.planDuration; // the car with id:2 is in front in lane 2
-	double new_jerk = (new_acc - v1_.acc) / plan.planDuration;
-	double new_s = v1_.s + v1_.speed * plan.planDuration + v1_.acc * pow(plan.planDuration, 2) / 2. + new_jerk * pow(plan.planDuration, 3) / 6.;
-	double new_speed = v1_.speed + v1_.acc* plan.planDuration + new_jerk * pow(plan.planDuration, 2) / 2.;
-	EXPECT_THAT(newGoal.end_s, ElementsAreArray({ new_s, new_speed, new_acc }));
+	EXPECT_THAT(newGoal.end_s, ElementsAreArray({ DoubleNear(139.55, 0.1), DoubleNear(19.435, 0.1), DoubleNear(9.434, 0.1) }));
 	EXPECT_THAT(newGoal.end_d, ElementsAreArray({ 6.0, 0.0, 0.0 })); // I want to move to the center of the current lane as much as possible
 }
 
 TEST_F(PlannerTest, correctlyRealizePlanToChangeToLeftLane) {
 	v1_.speed = 10.0; // lets give some speed.
-	v1_.acc = 1;
-	double new_acc = 0; // will drive with constant speed
-	double new_jerk = (new_acc - v1_.acc) / plan.planDuration;
-	double new_speed = v1_.speed + v1_.acc* plan.planDuration + new_jerk * pow(plan.planDuration, 2) / 2.;
-	double new_s = v1_.s + v1_.speed * plan.planDuration + v1_.acc * pow(plan.planDuration, 2) / 2. + new_jerk * pow(plan.planDuration, 3) / 6.;
+	v1_.acc = 10.0;
 	auto newGoal = plan.realizeChangeLeft(v1_, road);
 	EXPECT_THAT(newGoal.start_s, ElementsAreArray({ v1_.s , v1_.speed, v1_.acc }));
 	EXPECT_THAT(newGoal.start_d, ElementsAreArray({ v1_.d , 0.0, 0.0 })); // maybe d_speed should match local_yaw
 	// change lanes with constant speed (no acceleration)
-	EXPECT_THAT(newGoal.end_s, ElementsAreArray({ new_s , new_speed, 0.0 }));
+	EXPECT_THAT(newGoal.end_s, ElementsAreArray({ DoubleNear(134.834, 0.1), DoubleNear(10.0, 0.1), DoubleNear(0.0, 0.1) }));
 	EXPECT_THAT(newGoal.end_d, ElementsAreArray({ v1_.d - road.rcfg.lane_width , 0.0, 0.0 }));
 }
 
 TEST_F(PlannerTest, correctlyRealizePlanToChangeToRightLane) {
 	v1_.speed = 10.0; // lets give some speed.
-	v1_.acc = 1;
-	double new_acc = 0; // will drive with constant speed
-	double new_jerk = (new_acc - v1_.acc) / plan.planDuration;
-	double new_speed = v1_.speed + v1_.acc* plan.planDuration + new_jerk * pow(plan.planDuration, 2) / 2.;
-	double new_s = v1_.s + v1_.speed * plan.planDuration + v1_.acc * pow(plan.planDuration, 2) / 2. + new_jerk * pow(plan.planDuration, 3) / 6.;
+	v1_.acc = 10.0;
 	auto newGoal = plan.realizeChangeRight(v1_, road);
 	EXPECT_THAT(newGoal.start_s, ElementsAreArray({ v1_.s , v1_.speed, v1_.acc }));
 	EXPECT_THAT(newGoal.start_d, ElementsAreArray({ v1_.d , 0.0, 0.0 })); // maybe d_speed should match local_yaw
-																		  // change lanes with constant speed (no acceleration)
-	EXPECT_THAT(newGoal.end_s, ElementsAreArray({ new_s , new_speed, 0.0 }));
+	// change lanes with constant speed (no acceleration)
+	EXPECT_THAT(newGoal.end_s, ElementsAreArray({ DoubleNear(134.834, 0.1), DoubleNear(10.0, 0.1), DoubleNear(0.0, 0.1) }));
 	EXPECT_THAT(newGoal.end_d, ElementsAreArray({ v1_.d + road.rcfg.lane_width , 0.0, 0.0 }));
 }

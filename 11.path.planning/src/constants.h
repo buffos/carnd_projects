@@ -31,6 +31,9 @@ const double WEIGHT_COLLISION_COST = 1000000.0;
 const double WEIGHT_BUFFER_COST = 100.0;
 const double WEIGHT_MAX_ACCELERATION_COST = 5.0;
 const double WEIGHT_MAX_JERK_COST = 5.0;
+
+// splines constants
+const double OUT_OF_BOUNDS = 100000000.0;
 }
 
 #endif // CONSTANTS_H_

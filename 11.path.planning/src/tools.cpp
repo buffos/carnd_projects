@@ -1,4 +1,3 @@
-
 #include "tools.h"
 
 double logistic(double x)
@@ -99,7 +98,7 @@ vector<double> coords::getFrenet(double x, double y, double theta, vector<WayPoi
 
 	frenet_s += distance(0, 0, proj_x, proj_y);
 
-	return {frenet_s, frenet_d};
+	return { frenet_s, frenet_d };
 }
 
 /// Transform from Frenet s,d coordinates to Cartesian x,y
@@ -126,7 +125,7 @@ vector<double> coords::getXY(double s, double d, vector<WayPoint> &wp)
 	double x = seg_x + d * cos(perp_heading);
 	double y = seg_y + d * sin(perp_heading);
 
-	return {x, y};
+	return { x, y };
 }
 
 /// The real distance between two cars , taking into account the track loop
@@ -204,7 +203,7 @@ vector<int> coords::getLocalWayPointIndexes(int index, int back, int front, int 
 }
 
 ///  Create around global Frenet Coordinate s a Spline
-Splines coords::createLocalSplines(double s, vector<WayPoint> &wp, double trackLength)
+Splines coords::createLocalSplines(double s, int back, int front, vector<WayPoint> &wp, double trackLength)
 {
 	int prev_wp = -1;
 
@@ -213,8 +212,9 @@ Splines coords::createLocalSplines(double s, vector<WayPoint> &wp, double trackL
 		prev_wp++;
 	}
 
-	int back = 5;
-	int front = 15;
+	// if current_wp = 0 then prev_wp = -1 == the last in the list
+	prev_wp = (prev_wp == -1) ? prev_wp + wp.size() : prev_wp;
+
 	auto indexes = std::move(getLocalWayPointIndexes(prev_wp, back, front, wp.size()));
 
 	vector<double> x;
@@ -241,7 +241,7 @@ Splines coords::createLocalSplines(double s, vector<WayPoint> &wp, double trackL
 	if (wp[first_wp].s > wp[last_wp].s)
 	{
 		// add max_s to all variables less than last element (which is the left most element)
-		for (auto element : ss)
+		for (auto &element : ss)
 		{
 			if (element < wp[first_wp].s)
 			{
@@ -264,8 +264,8 @@ Splines coords::createLocalSplines(double s, vector<WayPoint> &wp, double trackL
 /// Evaluate a Spline Curve around {s,d} and get {x,y} coordinates
 vector<double> coords::evaluateSplineAtS(double s, double d, Splines sp, double trackLength)
 {
-	double x = 0.0;
-	double y = 0.0;
+	double x = constants::OUT_OF_BOUNDS;
+	double y = constants::OUT_OF_BOUNDS;
 
 	if (sp.start_s < sp.end_s) // this is a normal spline not at the end of the track
 	{
@@ -273,7 +273,7 @@ vector<double> coords::evaluateSplineAtS(double s, double d, Splines sp, double 
 		{								// in the range
 			x = sp.x(s) + sp.dx(s) * d; // the contribution from S and the contribution from d
 			y = sp.y(s) + sp.dy(s) * d;
-			return {x, y};
+			return { x, y };
 		}
 	}
 	else // we are at the loop of the track. I
@@ -284,15 +284,41 @@ vector<double> coords::evaluateSplineAtS(double s, double d, Splines sp, double 
 			// and there is also no need to add the extra max_s
 			x = sp.x(s) + sp.dx(s) * d; // the contribution from S and the contribution from d
 			y = sp.y(s) + sp.dy(s) * d;
-			return {x, y};
+			return { x, y };
 		}
 		else if (s < sp.start_s && s < sp.end_s)
 		{
 			// this means that its also in the range but I must add max_s to retrieve the x, y values
 			x = sp.x(s + trackLength) + sp.dx(s + trackLength) * d; // the contribution from S and the contribution from d
 			y = sp.y(s + trackLength) + sp.dy(s + trackLength) * d;
-			return {x, y};
+			return { x, y };
 		}
 	}
-	return {x, y};
+	return { x, y };
+}
+
+/// Check if a point with s coordinate is in the range covered by the Spline Curve
+bool coords::isPointInSpline(double s, double d, Splines sp, double trackLength) {
+	if (sp.start_s < sp.end_s) // this is a normal spline not at the end of the track
+	{
+		if (s >= sp.start_s && s <= sp.end_s)
+		{								// in the range
+			return true;
+		}
+	}
+	else // we are at the loop of the track. I
+	{
+		if (s > sp.start_s)
+		{
+			// since this is at the loop point if s > sp.start_s then its definitely in the range
+			// and there is also no need to add the extra max_s
+			return true;
+		}
+		else if (s < sp.start_s && s < sp.end_s)
+		{
+			// this means that its also in the range but I must add max_s to retrieve the x, y values
+			return true;
+		}
+	}
+	return false;
 }

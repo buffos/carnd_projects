@@ -34,9 +34,9 @@ protected:
 };
 
 TEST_F(PlannerTest, getsInitialValues) {
-	EXPECT_EQ(plan.maxCost, 100000.0);
-	EXPECT_EQ(plan.nearBuffer, 4);
-	EXPECT_EQ(plan.planDuration, 1.0);
+	EXPECT_EQ(plan.maxCost, constants::MAX_COST);
+	EXPECT_EQ(plan.nearBuffer, constants::SAFETY_DISTANCE);
+	EXPECT_EQ(plan.planDuration, 1.0); // changed in setUp
 
 	EXPECT_THAT(plan.next_modes, Contains(Key("KL")));
 	EXPECT_THAT(plan.next_modes, Contains(Key("MF")));
@@ -93,7 +93,7 @@ TEST_F(PlannerTest, correctlyCalculatesCostChangeLaneRight) {
 	double costForSpeed = plan.costSpeed(v1_, road.rcfg.target_speed, d3[0], d3[1]); // The cost to go to target speed in that lane.
 	EXPECT_NEAR(plan.costLaneChangeRight(v1_, road), costForSpace + costForSpeed, 0.01);
 	// now lets speed up and go fast
-	v1_.speed = 23; // at target speed
+	v1_.speed = constants::TARGET_SPEED; // at target speed
 	double timeToReachFrontVehicle = (d3[0] - plan.nearBuffer) / (road.rcfg.target_speed - d3[1]); // distance / how faster I am going
 	costForSpeed = 100 * timeToReachFrontVehicle;
 	EXPECT_NEAR(plan.costLaneChangeRight(v1_, road), costForSpace + costForSpeed, 0.01);
@@ -101,11 +101,14 @@ TEST_F(PlannerTest, correctlyCalculatesCostChangeLaneRight) {
 	v1_.s = road.cars[3].s - v1_.carLength - 2; // just 2 meters away;
 	d3 = road.distanceInFront(v1_, 3); // recalulate distance inf ront
 	timeToReachFrontVehicle = (d3[0] - plan.nearBuffer) / (road.rcfg.target_speed - d3[1]); // and recalculate cost for speed.
-	costForSpeed = 100 * timeToReachFrontVehicle;
-	EXPECT_NEAR(plan.costLaneChangeRight(v1_, road), 2000 + costForSpeed, 0.01);
+	timeToReachFrontVehicle = (timeToReachFrontVehicle < 0) ? 0.0 : timeToReachFrontVehicle;
+	costForSpeed = constants::WEIGHT_NEED_FOR_SPEED * timeToReachFrontVehicle;
+	costForSpace = plan.costSpace(v1_, plan.nearBuffer, d3[0], 10000000.0);
+	EXPECT_NEAR(plan.costLaneChangeRight(v1_, road), costForSpace + costForSpeed, 0.01);
 }
 
 TEST_F(PlannerTest, correctlyCalculateCostForSpace) {
+	plan.nearBuffer = 4;
 	auto cost = plan.costSpace(v1_, plan.nearBuffer, 2.0, 10000000.0); // 2 meters in front space and I need 4 for safety
 	EXPECT_NEAR(cost, 2000.0, 0.01);
 	cost = plan.costSpace(v1_, plan.nearBuffer, 2.0, 0.0); // do not cause error with one value being zero

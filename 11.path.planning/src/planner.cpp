@@ -134,6 +134,7 @@ double Planner::costSpeed(Vehicle &car, double desiredSpeed, double freeRoadAhea
 	else
 	{
 		double timeToReachFrontCar = (freeRoadAhead - nearBuffer) / relativeSpeed;
+		timeToReachFrontCar = (timeToReachFrontCar < 0) ? 0.0 : timeToReachFrontCar; // in case we are very close this gets negative
 		return constants::WEIGHT_NEED_FOR_SPEED * timeToReachFrontCar;
 	}
 }

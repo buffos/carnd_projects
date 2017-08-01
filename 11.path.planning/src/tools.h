@@ -7,6 +7,7 @@
 #include <vector>
 #include <math.h>
 #include "various_structs.h"
+#include "constants.h"
 
 using namespace std;
 
@@ -25,7 +26,8 @@ vector<double> getXY(double s, double d, vector<WayPoint> &wp);
 vector<double> real_s_distance(double s1, double s2, double trackLength);
 vector<int> getLocalWayPointIndexes(int index, int back, int front, int wp_size);
 vector<double> evaluateSplineAtS(double s, double d, Splines sp, double trackLength);
-Splines createLocalSplines(double s, vector<WayPoint> &wp, double trackLength);
+bool isPointInSpline(double s, double d, Splines sp, double trackLength);
+Splines createLocalSplines(double s, int back, int front, vector<WayPoint> &wp, double trackLength);
 };
 
 #endif // !TOOLS_H

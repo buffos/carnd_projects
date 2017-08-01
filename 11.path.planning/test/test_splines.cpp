@@ -58,22 +58,83 @@ TEST_F(SplinesTesting, correctlyCreatesWayPointsIndexFirstWP) {
 	EXPECT_THAT(indexes, ElementsAreArray({ 177,178,179,180,0,1,2,3,4,5 }));
 }
 
+TEST_F(SplinesTesting, correctlyFindsIfPointIsInSplice) {
+	double s20 = 565.138957977295; // the s of the 20th way point
+	double s25 = 718.46262550354; // the s of the 25th way point
+	double s70 = 2212.66669273376; // the s of the 70th way point
+	double s0 = 0.0; // the s of the 70th way point
+	double s3 = 90.4504146575928;
+	double s179 = 6871.54959487915;
+	double s170 = 6415.47916793823;
+
+	unsigned int lastWPindex = road.wpts.size() - 1;
+	double trackLength = road.wpts[lastWPindex].s + 43;
+
+	// normal s_point in middle of the track
+	auto spline = coords::createLocalSplines(s20, 5, 5, road.wpts, trackLength);
+	EXPECT_TRUE(coords::isPointInSpline(s20, 0.0, spline, road.wpts[lastWPindex].s));
+	EXPECT_FALSE(coords::isPointInSpline(s25, 0.0, spline, road.wpts[lastWPindex].s)); // just the next one
+	EXPECT_FALSE(coords::isPointInSpline(s70, 0.0, spline, road.wpts[lastWPindex].s));
+	EXPECT_FALSE(coords::isPointInSpline(0.0, 0.0, spline, road.wpts[lastWPindex].s));
+
+	// s_point at the beginning of the track
+	spline = coords::createLocalSplines(s0, 5, 5, road.wpts, trackLength);
+	EXPECT_TRUE(coords::isPointInSpline(s0, 0.0, spline, road.wpts[lastWPindex].s));
+	EXPECT_TRUE(coords::isPointInSpline(s3, 0.0, spline, road.wpts[lastWPindex].s));
+	EXPECT_TRUE(coords::isPointInSpline(s179, 0.0, spline, road.wpts[lastWPindex].s));
+	EXPECT_FALSE(coords::isPointInSpline(s170, 0.0, spline, road.wpts[lastWPindex].s));
+	EXPECT_FALSE(coords::isPointInSpline(s20, 0.0, spline, road.wpts[lastWPindex].s));
+
+}
+
+TEST_F(SplinesTesting, correctlyCreatesSplinesAtTheEdges) {
+	double s20 = 565.138957977295; // the s of the 20th way point
+	double s25 = 718.46262550354; // the s of the 25th way point
+	double s70 = 2212.66669273376; // the s of the 70th way point
+	double s0 = 0.0; // the s of the 70th way point
+	double s3 = 90.4504146575928;
+	double s179 = 6871.54959487915;
+	double s170 = 6415.47916793823;
+
+	unsigned int lastWPindex = road.wpts.size() - 1;
+	double trackLength = road.wpts[lastWPindex].s + 43;
+
+	auto spline = coords::createLocalSplines(s0, 5, 5, road.wpts, trackLength);
+
+
+	EXPECT_NEAR(spline.x(s0 + trackLength), 784.6001, 0.1);
+	EXPECT_NEAR(spline.y(s0 + trackLength), 1135.571, 0.1);
+	EXPECT_NEAR(spline.x(s3 + trackLength), 875.0436, 0.1);
+	EXPECT_NEAR(spline.y(s3 + trackLength), 1134.808, 0.1);
+	EXPECT_NEAR(spline.x(s179), 711.2, 0.1);
+	EXPECT_NEAR(spline.y(s179), 1143.5, 0.1);
+
+	// the correct way to evaluate points
+	auto xy = coords::evaluateSplineAtS(s0, 0, spline, trackLength);
+	EXPECT_THAT(xy, ElementsAre(DoubleNear(784.6001, 0.1), DoubleNear(1135.571, 0.1)));
+	xy = coords::evaluateSplineAtS(s3, 0, spline, trackLength);
+	EXPECT_THAT(xy, ElementsAre(DoubleNear(875.0436, 0.1), DoubleNear(1134.808, 0.1)));
+	xy = coords::evaluateSplineAtS(s179, 0, spline, trackLength);
+	EXPECT_THAT(xy, ElementsAre(DoubleNear(711.2, 0.1), DoubleNear(1143.5, 0.1)));
+}
+
 TEST_F(SplinesTesting, correctlyCreatesSplinesAtMiddleWayPoints) {
 	double s20 = 565.138957977295; // the s of the 20th way point
 	double s25 = 718.46262550354; // the s of the 25th way point
 	double s70 = 2212.66669273376; // the s of the 70th way point
-	//2234.7 2139.3 2212.66669273376 0.963896 -0.2662791
+								   //2234.7 2139.3 2212.66669273376 0.963896 -0.2662791
 	unsigned int lastWPindex = road.wpts.size() - 1;
-	auto spline = coords::createLocalSplines(s20, road.wpts, road.wpts[lastWPindex].s);
+	double trackLength = road.wpts[lastWPindex].s + 43;
+
+	auto spline = coords::createLocalSplines(s20, 5, 10, road.wpts, trackLength);
 	EXPECT_NEAR(spline.x(s20), 1340.477, 0.1);
 	EXPECT_NEAR(spline.y(s20), 1188.307, 0.1);
 	EXPECT_NEAR(spline.x(s25), 1492.771, 0.1);
 	EXPECT_NEAR(spline.y(s25), 1170.749, 0.1);
 	// the correct way to evaluate points
-	auto xy = coords::evaluateSplineAtS(s25, 0, spline, road.wpts[lastWPindex].s);
+	auto xy = coords::evaluateSplineAtS(s25, 0, spline, trackLength);
 	EXPECT_THAT(xy, ElementsAre(DoubleNear(1492.771, 0.1), DoubleNear(1170.749, 0.1)));
 	// OUT OF RANGE should return 
 	xy = coords::evaluateSplineAtS(s70, 0, spline, road.wpts[lastWPindex].s);
-	EXPECT_THAT(xy, ElementsAre(DoubleNear(1492.771, 0.1), DoubleNear(1170.749, 0.1)));
-
+	EXPECT_THAT(xy, ElementsAre(DoubleNear(constants::OUT_OF_BOUNDS, 0.1), DoubleNear(constants::OUT_OF_BOUNDS, 0.1)));
 }

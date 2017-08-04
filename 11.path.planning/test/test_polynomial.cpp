@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "polynomial.h"
+#include "../include/polynomial.h"
 
 using namespace std;
 using namespace testing;

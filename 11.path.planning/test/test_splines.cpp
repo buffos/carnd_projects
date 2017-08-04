@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "vehicle.h"
-#include "road.h"
-#include "tools.h"
+#include "../include/vehicle.h"
+#include "../include/road.h"
+#include "../include/tools.h"
 
 
 using namespace std;
@@ -72,18 +72,18 @@ TEST_F(SplinesTesting, correctlyFindsIfPointIsInSplice) {
 
 	// normal s_point in middle of the track
 	auto spline = coords::createLocalSplines(s20, 5, 5, road.wpts, trackLength);
-	EXPECT_TRUE(coords::isPointInSpline(s20, 0.0, spline, road.wpts[lastWPindex].s));
-	EXPECT_FALSE(coords::isPointInSpline(s25, 0.0, spline, road.wpts[lastWPindex].s)); // just the next one
-	EXPECT_FALSE(coords::isPointInSpline(s70, 0.0, spline, road.wpts[lastWPindex].s));
-	EXPECT_FALSE(coords::isPointInSpline(0.0, 0.0, spline, road.wpts[lastWPindex].s));
+	EXPECT_TRUE(coords::isPointInSpline(s20, spline));
+	EXPECT_FALSE(coords::isPointInSpline(s25, spline)); // just the next one
+	EXPECT_FALSE(coords::isPointInSpline(s70, spline));
+	EXPECT_FALSE(coords::isPointInSpline(0.0, spline));
 
 	// s_point at the beginning of the track
 	spline = coords::createLocalSplines(s0, 5, 5, road.wpts, trackLength);
-	EXPECT_TRUE(coords::isPointInSpline(s0, 0.0, spline, road.wpts[lastWPindex].s));
-	EXPECT_TRUE(coords::isPointInSpline(s3, 0.0, spline, road.wpts[lastWPindex].s));
-	EXPECT_TRUE(coords::isPointInSpline(s179, 0.0, spline, road.wpts[lastWPindex].s));
-	EXPECT_FALSE(coords::isPointInSpline(s170, 0.0, spline, road.wpts[lastWPindex].s));
-	EXPECT_FALSE(coords::isPointInSpline(s20, 0.0, spline, road.wpts[lastWPindex].s));
+	EXPECT_TRUE(coords::isPointInSpline(s0, spline));
+	EXPECT_TRUE(coords::isPointInSpline(s3, spline));
+	EXPECT_TRUE(coords::isPointInSpline(s179, spline));
+	EXPECT_FALSE(coords::isPointInSpline(s170, spline));
+	EXPECT_FALSE(coords::isPointInSpline(s20, spline));
 
 }
 

@@ -8,46 +8,47 @@ using Eigen::VectorXd;
 /// helper functions
 TrajectoryGenerator::TrajectoryGenerator(double planDuration, int FramesPerSecond, int numberOfSamples)
 {
-	this->planDuration = planDuration;
-	this->timestep = 1.0 / FramesPerSecond;
-	this->numberOfSamples = numberOfSamples;
+	this->numberOfSamples = constants::SAMPLE_TRAJECTORIES;
 }
 
 Trajectory TrajectoryGenerator::generateTrajectory(StateGoal &s, Vehicle &car, Road &r)
 {
+	auto planDuration = s.duration;
+	auto timestep = 1.0 / constants::FRAMES_PER_SEC;
 	double lowTimeBound = planDuration - 4 * timestep;
 	double highTimeBound = planDuration + 4 * timestep;
 
-	//vector<StateGoal> newGoals = std::move(perturbGoal(s));
+	//vector<StateGoal> newGoals = std::move(perturbGoal(s, r));
 	//vector<Trajectory> newTrajectories;
 
-	// for all plan duration times and all perturbations
-	// of the original goal I create all possible trajectories
+	////for all plan duration times and all perturbations
+	////of the original goal I create all possible trajectories
 	//for (double time = lowTimeBound; time <= highTimeBound; time += timestep)
 	//{
-	//    for (auto goal : newGoals)
-	//    {
-	//        Trajectory tr;
-	//        tr.s_trajectory = std::move(jmt(goal, time, 1));
-	//        tr.d_trajectory = std::move(jmt(goal, time, 2));
-	//        tr.duration = time;
-	//        tr.cost = totalCost(tr, s, car, r); // find cost of trajectory
-	//        newTrajectories.push_back(tr);
-	//    }
+	//	for (auto &goal : newGoals)
+	//	{
+	//		Trajectory tr;
+	//		tr.s_trajectory = std::move(jmt(goal, time, 1));
+	//		tr.d_trajectory = std::move(jmt(goal, time, 2));
+	//		tr.duration = time;
+	//		tr.cost = totalCost(tr, s, car, r); // find cost of trajectory
+	//		newTrajectories.push_back(tr);
+	//	}
 	//}
 
 	//// sort the with increasing order based on cost
 	//std::sort(newTrajectories.begin(), newTrajectories.end(), [](Trajectory &i, Trajectory &j) -> bool {
-	//    return i.cost < j.cost;
+	//	return i.cost < j.cost;
 	//});
 
 	//// now we evaluate the generated trajectories and select the best trajectory
 	//// from the sorted array of trajectories
 	//return newTrajectories[0];
+
 	Trajectory tr;
-	tr.s_trajectory = std::move(jmt(s, planDuration, 1));
-	tr.d_trajectory = std::move(jmt(s, planDuration, 2));
-	tr.duration = planDuration;
+	tr.s_trajectory = std::move(jmt(s, s.duration, 1));
+	tr.d_trajectory = std::move(jmt(s, s.duration, 2));
+	tr.duration = s.duration;
 	tr.cost = 0.0; // find cost of trajectory
 	return tr;
 }
@@ -68,12 +69,10 @@ vector<StateGoal> TrajectoryGenerator::perturbGoal(StateGoal &s, Road &r)
 		double factor = distribute_values(generator);
 		newStateGoal.start_s = s.start_s;
 		newStateGoal.start_d = s.start_d;
-		newStateGoal.end_s = {s.end_s[0] + r.rcfg.max_speed * planDuration * factor,
+		newStateGoal.end_s = { s.end_s[0] + r.rcfg.max_speed * s.duration * factor,
 							  s.end_s[1] + r.rcfg.max_speed * factor,
-							  s.end_s[2] + r.rcfg.max_acceleration * factor};
-		newStateGoal.end_d = {s.end_d[0] + factor,
-							  s.end_d[1],
-							  s.end_d[2]};
+							  s.end_s[2] + r.rcfg.max_acceleration * factor };
+		newStateGoal.end_d = { s.end_d[0] + factor, s.end_d[1],	s.end_d[2] };
 		newGoals.push_back(newStateGoal);
 	}
 	return newGoals;
@@ -119,25 +118,25 @@ vector<double> TrajectoryGenerator::jmt(StateGoal &s, double t, int s_or_d)
 	double a4 = C[1];
 	double a5 = C[2];
 
-	vector<double> result = {a0, a1, a2, a3, a4, a5};
+	vector<double> result = { a0, a1, a2, a3, a4, a5 };
 
 	return result;
 }
 
-// cost because the trajectory is shorter or longer than the desired planDuration
+/// cost because the trajectory is shorter or longer than the desired planDuration
 double TrajectoryGenerator::timeDifferenceCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
 {
-	double x = abs(planDuration - tr.duration) / planDuration;
+	double x = abs(s.duration - tr.duration) / s.duration;
 	return logistic(x);
 }
 
-// cost because the s coordinate and derivatives are not as the goal
+/// cost because the s coordinate and derivatives are not as the goal
 double TrajectoryGenerator::s_DifferenceCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
 {
 	Polynomial p(tr.s_trajectory); // create a polynomial based on the trajectory coefficients
-	double actual_s_s = p.evalAt(planDuration, 0);
-	double actual_s_v = p.evalAt(planDuration, 1);
-	double actual_s_a = p.evalAt(planDuration, 2);
+	double actual_s_s = p.evalAt(tr.duration, 0);
+	double actual_s_v = p.evalAt(tr.duration, 1);
+	double actual_s_a = p.evalAt(tr.duration, 2);
 
 	// compare with the original goal from planner
 	double expected_s_s = s.end_s[0];
@@ -152,13 +151,13 @@ double TrajectoryGenerator::s_DifferenceCost(Trajectory &tr, StateGoal &s, Vehic
 	return cost;
 }
 
-// cost because the d coordinate and derivatives are not as the goal
+/// cost because the d coordinate and derivatives are not as the goal
 double TrajectoryGenerator::d_DifferenceCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
 {
 	Polynomial p(tr.s_trajectory); // create a polynomial based on the trajectory coefficients
-	double actual_d_s = p.evalAt(planDuration, 0);
-	double actual_d_v = p.evalAt(planDuration, 1);
-	double actual_d_a = p.evalAt(planDuration, 2);
+	double actual_d_s = p.evalAt(tr.duration, 0);
+	double actual_d_v = p.evalAt(tr.duration, 1);
+	double actual_d_a = p.evalAt(tr.duration, 2);
 
 	// compare with the original goal from planner
 	double expected_d_s = s.end_d[0];
@@ -180,9 +179,9 @@ double TrajectoryGenerator::collisionCost(Trajectory &tr, StateGoal &s, Vehicle 
 	Polynomial p_d(tr.d_trajectory);
 
 	double closest = 9999999.0; // at any time
-	double dt = planDuration / 100.;
+	double dt = tr.duration / 100.;
 	// split time in the number of frames i have and check the closest vehicle at that time
-	for (double t = 0; t <= planDuration; t += dt)
+	for (double t = 0; t <= tr.duration; t += dt)
 	{
 		double s_at_time = p_s.evalAt(t, 0);
 		double d_at_time = p_d.evalAt(t, 0);
@@ -202,9 +201,9 @@ double TrajectoryGenerator::bufferCost(Trajectory &tr, StateGoal &s, Vehicle &ca
 	Polynomial p_d(tr.d_trajectory);
 
 	double closest = 9999999.0; // at any time
-	double dt = planDuration / 100.;
+	double dt = tr.duration / 100.;
 	// split time in the number of frames i have and check the closest vehicle at that time
-	for (double t = 0; t <= planDuration; t += dt)
+	for (double t = 0; t <= tr.duration; t += dt)
 	{
 		double s_at_time = p_s.evalAt(t, 0);
 		double d_at_time = p_d.evalAt(t, 0);
@@ -221,9 +220,9 @@ double TrajectoryGenerator::bufferCost(Trajectory &tr, StateGoal &s, Vehicle &ca
 double TrajectoryGenerator::maxAccelerationCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
 {
 	Polynomial p_s(tr.s_trajectory);
-	double dt = planDuration / 100.;
+	double dt = tr.duration / 100.;
 	double max_acceleration = 0.0;
-	for (double t = 0; t <= planDuration; t += dt)
+	for (double t = 0; t <= tr.duration; t += dt)
 	{
 		double s_acc_at_time = p_s.evalAt(t, 2);
 		max_acceleration = (s_acc_at_time > max_acceleration) ? s_acc_at_time : max_acceleration;
@@ -235,9 +234,9 @@ double TrajectoryGenerator::maxAccelerationCost(Trajectory &tr, StateGoal &s, Ve
 double TrajectoryGenerator::maxJerkCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r)
 {
 	Polynomial p_s(tr.s_trajectory);
-	double dt = planDuration / 100.;
+	double dt = tr.duration / 100.;
 	double max_jerk = 0.0;
-	for (double t = 0; t <= planDuration; t += dt)
+	for (double t = 0; t <= tr.duration; t += dt)
 	{
 		double s_jerk_at_time = p_s.evalAt(t, 3);
 		max_jerk = (s_jerk_at_time > max_jerk) ? s_jerk_at_time : max_jerk;
@@ -253,8 +252,8 @@ double TrajectoryGenerator::totalCost(Trajectory &tr, StateGoal &s, Vehicle &car
 	cost += constants::WEIGHT_TIME_DIFFERENCE_COST * timeDifferenceCost(tr, s, car, r);
 	cost += constants::WEIGHT_S_DIFFERENCE_COST * s_DifferenceCost(tr, s, car, r);
 	cost += constants::WEIGHT_D_DIFFERENCE_COST * d_DifferenceCost(tr, s, car, r);
-	cost += constants::WEIGHT_COLLISION_COST * collisionCost(tr, s, car, r);
-	cost += constants::WEIGHT_BUFFER_COST * bufferCost(tr, s, car, r);
+	//cost += constants::WEIGHT_COLLISION_COST * collisionCost(tr, s, car, r);
+	//cost += constants::WEIGHT_BUFFER_COST * bufferCost(tr, s, car, r);
 	cost += constants::WEIGHT_MAX_ACCELERATION_COST * maxAccelerationCost(tr, s, car, r);
 	cost += constants::WEIGHT_MAX_JERK_COST * maxJerkCost(tr, s, car, r);
 

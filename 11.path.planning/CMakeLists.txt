@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.5)
 project(Path_Planning)
 
 # compiler flags.
-add_definitions(-std=c++11)
+# add_definitions(-std=c++11)
 set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
@@ -23,8 +23,10 @@ download_project(PROJ                googletest
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 
+include_directories(include)
 add_subdirectory(src)
 add_subdirectory(test)
+
 
 enable_testing ()
 add_test (NAME MyTest COMMAND test_path --gtest_output=xml:report.xml)

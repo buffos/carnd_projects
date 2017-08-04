@@ -1,10 +1,10 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "vehicle.h"
-#include "road.h"
-#include "planner.h"
+#include "../include/vehicle.h"
+#include "../include/road.h"
+#include "../include/planner.h"
 #include "trajectoryGenerator.h"
-#include "discreteCurves.h"
+#include "../include/discreteCurves.h"
 
 using namespace std;
 using namespace testing;
@@ -136,7 +136,7 @@ TEST_F(DiscreteCurvesTest, correctlyCreatesCurvesInXY) {
 	string next_mode = plan.select_mode(v1_, road);
 	StateGoal goal = plan.realizePlan(next_mode, v1_, road);
 	auto some_curve = tr.generateTrajectory(goal, v1_, road);
-	auto curve = handler.createCurveFromCoefficientsInXY(some_curve, 50, road.wpts);
+	auto curve = handler.createCurveFromCoefficientsInXY(some_curve, 50, road);
 	// curve.printCurve();
 	SUCCEED();
 }
@@ -145,7 +145,7 @@ TEST_F(DiscreteCurvesTest, correctlyCreatesCurvestoJSON) {
 	string next_mode = plan.select_mode(v1_, road);
 	StateGoal goal = plan.realizePlan(next_mode, v1_, road);
 	auto some_curve = tr.generateTrajectory(goal, v1_, road);
-	auto curve = handler.createCurveFromCoefficientsInXY(some_curve, 50, road.wpts);
+	auto curve = handler.createCurveFromCoefficientsInXY(some_curve, 50, road);
 	curve = handler.mergeCurves(curve, v1_.previousCurve);
 	// cout << curve.toJson() << endl;
 	SUCCEED();

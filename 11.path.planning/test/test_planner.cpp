@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "vehicle.h"
-#include "road.h"
-#include "planner.h"
+#include "../include/vehicle.h"
+#include "../include/road.h"
+#include "../include/planner.h"
 
 
 using namespace std;

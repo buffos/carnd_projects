@@ -5,6 +5,8 @@
 #include <cmath>
 #include <random>
 
+#include "Eigen-3.3/Eigen/Core"
+#include "Eigen-3.3/Eigen/QR"
 #include "Eigen-3.3/Eigen/Dense"
 #include "polynomial.h"
 #include "planner.h"
@@ -16,8 +18,6 @@ using namespace std;
 struct TrajectoryGenerator
 {
     double sigma = constants::STD_DEVIATION;        // use 5% of the goal value as a standard deviation
-    double timestep = 1. / constants::FRAMES_PER_SEC;     // in seconds
-    double planDuration = constants::PLAN_DURATION; // in seconds. the original plan duration
     double numberOfSamples = constants::SAMPLE_TRAJECTORIES;
 
 	TrajectoryGenerator(double planDuration=1.0, int FramesPerSecond=50, int numberOfSamples = 10);

@@ -5,117 +5,171 @@
 #include <sstream>
 #include <string>
 
-void Road::updateData(json j, int index)
-{
-    auto sensor_fusion = j[index]["sensor_fusion"];
-    for (unsigned int i = 0; i < sensor_fusion.size(); i++)
-    {
-        int id = sensor_fusion[i][0];
-        double x = sensor_fusion[i][1];
-        double y = sensor_fusion[i][2];
-        double vx = sensor_fusion[i][3];
-        double vy = sensor_fusion[i][4];
-        double s = sensor_fusion[i][5];
-        double d = sensor_fusion[i][6];
-        double speed = sqrt(vx * vx + vy * vy);
-        double yaw = atan2(vy, vx);
-        Vehicle newCar(x, y, s, d, yaw, speed);
-        cars.push_back(newCar);
-    }
+void Road::updateData(const json j, int index) {
+  auto sensor_fusion = j[index]["sensor_fusion"];
+  for (unsigned int i = 0; i < sensor_fusion.size(); i++) {
+    int id = sensor_fusion[i][0];
+    double x = sensor_fusion[i][1];
+    double y = sensor_fusion[i][2];
+    double vx = sensor_fusion[i][3];
+    double vy = sensor_fusion[i][4];
+    double s = sensor_fusion[i][5];
+    double d = sensor_fusion[i][6];
+    double speed = sqrt(vx * vx + vy * vy);
+    double yaw = atan2(vy, vx);
+    Vehicle newCar(x, y, s, d, yaw, speed);
+    cars.push_back(newCar);
+  }
 }
 
-void Road::readWayPointsFromFile(string filename)
-{
-    ifstream in_map_(filename.c_str(), ifstream::in);
-    string line;
+void Road::readWayPointsFromFile(string filename) {
+  ifstream in_map_(filename.c_str(), ifstream::in);
+  string line;
 
-    while (getline(in_map_, line))
-    {
-        istringstream iss(line);
-        double x;
-        double y;
-        float s;
-        float d_x;
-        float d_y;
-        iss >> x;
-        iss >> y;
-        iss >> s;
-        iss >> d_x;
-        iss >> d_y;
-        wpts.push_back(WayPoint(x, y, s, d_x, d_y));
-    }
+  while (getline(in_map_, line)) {
+    istringstream iss(line);
+    double x;
+    double y;
+    float s;
+    float d_x;
+    float d_y;
+    iss >> x;
+    iss >> y;
+    iss >> s;
+    iss >> d_x;
+    iss >> d_y;
+    wpts.push_back(WayPoint(x, y, s, d_x, d_y));
+  }
 }
 
-vector<double> Road::distanceInFront(Vehicle &car, int lane)
-{
-    // this function will look ahead in the given lane and find the distance to the closest car in front
-    double current_s = 9999999.0;
-    double speed_carInFront = 1000000.0;
-    double other_car_length = car.carLength;
-    for (auto &&other_car : cars)
-    {
-        if (lane == other_car.getLane())
-        {
-            auto car_distance = coords::real_s_distance(car.s, other_car.s, rcfg.max_s);
+vector<double> Road::distanceInFront(const Vehicle &car, int lane) const {
+  // this function will look ahead in the given lane
+  // and find the distance to the closest car in front
+	double d_closest = std::numeric_limits<double>::max();
+    double v_closest = std::numeric_limits<double>::max();
+	int i_closest = 0;
+	//double t = car.currentGoal.duration;
+	//double s = car.currentGoal.start_s[0];
+	double s = car.s;
+	double S_MAX = constants::TRACKLENGTH;
 
-            if (car_distance[0] < current_s && car_distance[1] == 2)
-            { // car_distance[1] == 2 means other car (argument 2) in front
-                current_s = car_distance[0];
-                speed_carInFront = other_car.speed;
-                other_car_length = other_car.carLength;
-            }
-        }
-    }
-    // s treats car like points so add the physical half lenghts
-    if (current_s != 9999999.0)
-    { // only if there was some car found
-        current_s -= (car.carLength + other_car_length) * 0.5;
-    }
+	for (unsigned int i = 0; i < cars.size(); i++) {
+		if (lane != cars[i].getLane()) {
+			continue;
+		}
+		auto s_i = cars[i].s;
+		double d = (s < s_i ? s_i - s : s_i + S_MAX - s);
+		if (d < d_closest) {
+			d_closest = d;
+			i_closest = i;
+			v_closest = cars[i].speed;
+		}
+	}
 
-    return vector<double>{current_s, speed_carInFront};
+  return vector<double>{d_closest, v_closest};
 }
 
-vector<double> Road::distanceBehind(Vehicle &car, int lane)
-{
-    // this function will look ahead in the given lane and find the distance to the closest car behind
-    double max_distance = 100.0; // check up to 100 meters
-    double current_s = 9999999.0;
-    double speed_carBehind = 1000000.0;
-    double other_car_length = car.carLength;
-    for (auto &other_car : cars)
-    {
-        if (lane == other_car.getLane())
-        {
-            auto car_distance = coords::real_s_distance(car.s, other_car.s, rcfg.max_s);
+vector<double> Road::distanceBehind(const Vehicle &car, int lane) const {
+	// this function will look behind in the given lane
+	// and find the distance to the closest car in front
+	double d_closest = std::numeric_limits<double>::max();
+	double v_closest = std::numeric_limits<double>::max();
+	int i_closest = 0;
+	//double t = car.currentGoal.duration;
+	//double s = car.currentGoal.start_s[0];
+	double s = car.s;
+	double S_MAX = constants::TRACKLENGTH;
 
-            if (car_distance[0] < current_s && car_distance[1] == 1)
-            { // car_distance[1] == 1 means my car (argument 1) in front. so other_car is behind
-                current_s = car_distance[0];
-                speed_carBehind = other_car.speed;
-                other_car_length = other_car.carLength;
-            }
-        }
-    }
-    // s treats car like points so add the physical half lenghts
-    if (current_s != 9999999.0)
-    { // only if there was some car found
-        current_s -= (car.carLength + other_car_length) * 0.5;
-    }
-    return vector<double>{current_s, speed_carBehind};
+	for (unsigned int i = 0; i < cars.size(); i++) {
+		if (lane != cars[i].getLane()) {
+			continue;
+		}
+		auto s_i = cars[i].s;
+		double d = (s_i < s ? s - s_i : s + S_MAX - s_i);
+		if (d < d_closest) {
+			d_closest = d;
+			i_closest = i;
+		}
+	}
+
+	return vector<double>{d_closest, v_closest};
 }
 
-double Road::closestVehicleAt(double s, double d, double time)
-{
-    double closest = 99999999.0;
-    for (auto &other_car : cars)
-    {
-        auto state = other_car.getStateAt(time);
-        double s_distance = coords::real_s_distance(state[1], s, rcfg.max_s)[0];                 // the second entry is the distance
-        double distance = sqrt(s_distance * s_distance + (other_car.d - d) * (other_car.d - d)); // we do not predict d change (we should)
-        if (distance < closest)
-        {
-            closest = distance;
-        }
+double Road::closestVehicleAt(double s, double d, double time) {
+  double closest = 99999999.0;
+  for (auto &other_car : cars) {
+    auto state = other_car.getStateAt(time);
+    double s_distance = coords::real_s_distance(state[0], s, rcfg.max_s)[0];
+    double distance = sqrt(s_distance * s_distance
+                               + (other_car.d - d) * (other_car.d - d));
+
+    // we do not predict d change (we should)
+    if (distance < closest) {
+      closest = distance;
     }
-    return closest;
+  }
+  return closest;
+}
+
+void Road::createTrackSpline() {
+  vector<double> x;
+  vector<double> y;
+  vector<double> ss;
+  vector<double> dx;
+  vector<double> dy;
+
+  for (auto const &point : wpts) {
+    x.push_back(point.x);
+    y.push_back(point.y);
+    ss.push_back(point.s);
+    dx.push_back(point.dx);
+    dy.push_back(point.dy);
+  }
+  // close the loop
+  x.push_back(wpts[0].x);
+  y.push_back(wpts[0].y);
+  ss.push_back(constants::TRACKLENGTH);
+  dx.push_back(wpts[0].dx);
+  dy.push_back(wpts[0].dy);
+
+  track_spline.x.set_points(ss, x);
+  track_spline.y.set_points(ss, y);
+  track_spline.dx.set_points(ss, dx);
+  track_spline.dy.set_points(ss, dy);
+  track_spline.start_s = 0;
+  track_spline.end_s = constants::TRACKLENGTH;
+}
+
+vector<double> Road::toXY(const double s, const double d) const {
+  double real_s = fmod(s, constants::TRACKLENGTH);
+  double x = track_spline.x(real_s);
+  double y = track_spline.y(real_s);
+  double dx = track_spline.dx(real_s);
+  double dy = track_spline.dy(real_s);
+
+  x += dx * d;
+  y += dy * d;
+
+  return {x, y};
+}
+
+vector<double> Road::estimateCurvatureFactor(const double s, const double d,
+                                             const int evaluationPoints,
+                                             const double scanningDistance) const {
+  // take a piece of 100 meters road and split it into 4 points
+  // add the XY distance and see how bigger its from s distance, which is 100
+  const auto points = evaluationPoints;
+  const auto distPerPoint = scanningDistance / (points - 1);
+  auto xyDistance = 0.0;
+  for (int i = 0; i < points - 1; i++) {
+    auto current_s = fmod(s + i * distPerPoint, constants::TRACKLENGTH);
+    auto next_s = fmod(s + (i + 1) * distPerPoint, constants::TRACKLENGTH);
+    auto current_xy = toXY(current_s, d);
+    auto next_xy = toXY(next_s, d);
+    auto newDistance = coords::distance(current_xy[0], current_xy[1],
+                                        next_xy[0], next_xy[1]);
+    xyDistance += newDistance;
+  }
+  auto factor = xyDistance / scanningDistance;
+  return vector<double>{factor, xyDistance};
 }

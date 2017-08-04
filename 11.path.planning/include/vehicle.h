@@ -1,7 +1,7 @@
 #ifndef VEHICLE_H
 #define VEHICLE_H
 
-#include "../src/json.hpp"
+#include "json.hpp"
 #include <fstream>
 #include <vector>
 #include <chrono>
@@ -10,42 +10,45 @@
 using json = nlohmann::json;
 using namespace std;
 
-// from mph to m/s
+/// from mph to m/s
 inline double MPH_to_MPS(double speed) { return speed * 0.44704; }
 
+/// Class Vehicle.
 struct Vehicle {
+  StateGoal currentGoal; ///< includes the goal state of the car. used for generating the next state
+  RoadConfiguration r; ///< basic road characteristics we are moving on
+  DiscreteCurve previousCurve; ///< points not consumed by the sim from our previous plan
   double carLength = 5.0;
-  double safetyRadius = 2.0; // safety radius
-  RoadConfiguration r;
-  double x , y, s, d, yaw, speed;
-  double acc = 0.0;
-  double end_s = 0.0;
-  double end_d = 0.0;
-  DiscreteCurve previousCurve;
-  StateGoal currentGoal;
+  double x, y, yaw, speed, acc = 0.0; ///< state in cartesian coordinates
+  double s, d , v_s, v_d, local_yaw; ///< state in frenet space
 
-  string mode = "OFF"; // OFF in the beginning
+  string mode = "OFF"; ///< current plan car is implementing. set by planner
 
-  Vehicle();
-  Vehicle(double x, double y, double s, double d, double yaw, double speed);
-  // Vehicle(const Vehicle &car); // if yawInDegrees it will be converted to
-  // rads
+  Vehicle(); ///< create an empty car
+  Vehicle(double x, double y, double s, double d, double yaw, double speed); ///< create a car with initial values
+  explicit Vehicle(const json j, int index = 1, bool yawInDegrees = false); ///< create a car with values from json
 
-  explicit Vehicle(const json j, int index = 1, bool yawInDegrees = false);
+  void updateData(const json &j, int index = 1, bool yawInDegrees = false); ///< update an existing car from json
+  void updateLocalData(const double lane_yaw); ///< calculate local yaw and speed on frenet space
+  void readPreviousPath(const json &j, int index = 1);  ///< read previous path from json returned by sim
+  void useRoadConfiguration(RoadConfiguration rcfg); ///< apply road configuration if you change roads
+  void printVehicle(ofstream &log); ///< convinience function for debugging to file
+  void printVehicle(); ///<convinience function for debugging to console
 
-  void updateData(const json &j, int index = 1, bool yawInDegrees = false);
-  void readPreviousPath(const json &j, int index = 1);
-  void useRoadConfiguration(RoadConfiguration rcfg);
-  void printVehicle(ofstream &log);
-  void printVehicle();
-
-  int getLane() const ;
-  double getTargetD(int lane) const ;
+  int lag();///< how much lag was in this iteration.
+  int getLane() const; ///< based on d , return the lane we are on the road
+  double getTargetD(int lane) const; ///< based on the lane we want to move, get the middle of it, in d-coordinates
 
   // predictions
-  bool collidesWith(Vehicle &other, double time = 0);
-  pair<bool, int> willCollideWith(Vehicle &other, int timesteps, double dt);
-  vector<double> getStateAt(double time); // returns {lane, new_s, new_v, acc}
+  bool collidesWith(Vehicle &other, double time = 0); ///< where the vehicle will be in t-time, in frenet coordinates
+  pair<bool, int> willCollideWith(Vehicle &other, int timesteps, double dt); ///< checks collision with other car
+
+  /**
+   * where the vehicle will be in t-time, in frenet coordinates
+   * @param time
+   * @return The state in given time {new_s, new_d, v_s, v_d}
+   */
+  vector<double> getStateAt(double time);
 };
 
 #endif // !VEHICLE_H

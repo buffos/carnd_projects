@@ -14,12 +14,13 @@ using namespace std;
 struct Planner {
   double nearBuffer = constants::SAFETY_DISTANCE; // need for safety a buffer from front and behind cars
   double maxCost = constants::MAX_COST;
-  int nextUpdateIn = constants::UPDATE_EVERY;
+  int nextUpdateIn = 0;
+  double reportedLag = 0;
 
   static map<string, vector<string>> next_modes;
 
   // counter will be set by the planner when updating
-  bool shouldUpdate() { if (nextUpdateIn == 0) { return true; } else { nextUpdateIn--; return false; } } 
+  bool shouldUpdate() { if (nextUpdateIn <= constants::UPDATE_WHEN) { return true; } else { nextUpdateIn--; return false; } } 
 
   string select_mode(const Vehicle &car, const Road &r);
   double costLaneChangeLeft(const Vehicle &car, const Road &r);

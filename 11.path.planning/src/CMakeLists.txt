@@ -1,5 +1,5 @@
 file(GLOB sources "*.cpp")
-file(GLOB headers "../include/*.h")
+file(GLOB headers "../include/*.h*")
 set(sources ${sources} ${headers})
 # remove main from sources to create a library so I can link to both main and test.
 list(REMOVE_ITEM sources ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)

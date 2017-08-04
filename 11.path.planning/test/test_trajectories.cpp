@@ -12,7 +12,8 @@ using namespace testing;
 
 class TrajectoryTest : public ::testing::Test {
 protected:
-	virtual void SetUp() {
+  TrajectoryTest() {}
+  virtual void SetUp() {
 		RoadConfiguration rcfg;
 		road.updateData(j, 1);
 		road.readWayPointsFromFile(map_file_);
@@ -35,8 +36,6 @@ protected:
 
 TEST_F(TrajectoryTest, correctlySetInitialValues) {
 	EXPECT_EQ(tr.sigma, 0.05);
-	EXPECT_EQ(tr.timestep, 0.02);
-	EXPECT_EQ(tr.planDuration, 1.0);
 	EXPECT_EQ(tr.numberOfSamples, 10);
 }
 
@@ -101,7 +100,8 @@ TEST_F(TrajectoryTest, correctlyGeneratesTrajectory) {
 
 class DiscreteCurvesTest : public ::testing::Test {
 protected:
-	virtual void SetUp() {
+  DiscreteCurvesTest() {}
+  virtual void SetUp() {
 		RoadConfiguration rcfg;
 		road.updateData(j, 1);
 		road.readWayPointsFromFile(map_file_);

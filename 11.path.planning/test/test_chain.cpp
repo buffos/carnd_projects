@@ -13,7 +13,8 @@ using namespace testing;
 
 class CurveChainTest : public ::testing::Test {
 protected:
-	virtual void SetUp() {
+  CurveChainTest() {}
+  virtual void SetUp() {
 		RoadConfiguration rcfg;
 		road.updateData(j, 1);
 		road.readWayPointsFromFile(map_file_);

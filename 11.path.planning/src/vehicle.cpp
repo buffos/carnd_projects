@@ -1,31 +1,26 @@
 #include "vehicle.h"
 #include "tools.h"
 
-Vehicle::Vehicle() : x(0.0), y(0.0), s(0.0), d(0.0), yaw(0.0), speed(0.0) {}
+// constructors
+Vehicle::Vehicle() : x(0.0), y(0.0), s(0.0), d(0.0), yaw(0.0), speed(0.0), v_s(0.0), v_d(0.0), local_yaw(0.0) {}
 
-Vehicle::Vehicle(double x, double y, double s, double d, double yaw,
-                 double speed) : x(x), y(y), s(s), d(d),
-                                 yaw(yaw), speed(speed) {}
+Vehicle::Vehicle(double x, double y, double s, double d, double yaw, double speed) {
+  this->x = x;
+  this->y = y;
+  this->s = s;
+  this->d = d;
+  this->speed = speed;
+  this->yaw = yaw;
+  this->local_yaw = 0.0;
+  this->v_s = 0.0;
+  this->v_d = 0.0;
+}
 
 Vehicle::Vehicle(const json j, const int index, const bool yawInDegrees) {
   updateData(j, index, yawInDegrees);
 }
 
-//Vehicle::Vehicle(const Vehicle &car) {
-//  x = car.x;
-//  y = car.y;
-//  s = car.s;
-//  d = car.d;
-//  yaw = car.yaw;
-//  speed = car.speed;
-//  acc = car.acc;
-//  time = car.time;
-//  previousCurve = car.previousCurve;
-//  end_s = car.end_s;
-//  end_d = car.end_d;
-//  init_clock = true;
-//}
-
+// update
 void Vehicle::updateData(const json &j, const int index, const bool yawInDegrees) {
   x = j[index]["x"];
   y = j[index]["y"];
@@ -38,59 +33,56 @@ void Vehicle::updateData(const json &j, const int index, const bool yawInDegrees
         j[index]["yaw"].get<double>();
 }
 
+void Vehicle::updateLocalData(const double lane_yaw) {
+  local_yaw = yaw - lane_yaw;
+  v_s = speed * cos(local_yaw);
+  v_d = speed * sin(local_yaw);
+}
+
 void Vehicle::readPreviousPath(const json &j, int index) {
   previousCurve.c_1 = j[index]["previous_path_x"].get<vector<double>>();
   previousCurve.c_2 = j[index]["previous_path_y"].get<vector<double>>();
   previousCurve.coordinateSystem = 1; // XY coordinates
-  end_s = j[index]["end_path_s"];
-  end_d = j[index]["end_path_d"];
 }
-
 
 void Vehicle::useRoadConfiguration(RoadConfiguration rcfg) {
   this->r = rcfg;
 }
 
-
+// getters
 int Vehicle::getLane() const {
-  //if (d <= 0 or d >= r.lane_width * r.lanes) {
-  //  return 0;
-  //}
+  if (d <= 0 or d >= r.lane_width * r.lanes) {
+    return 0;
+  }
 
-  //return static_cast<int>(floor(d / r.lane_width) + 1.0);
-	int lane = 0;
-	if (d > 0.0 && d < 4.0) {
-		lane = 1;
-	}
-	else if (d > 4.0 && d < 8.0) {
-		lane = 2;
-	}
-	else if (d > 8.0 && d < 12.0) {
-		lane = 3;
-	}
-	return lane;
+  return static_cast<int>(floor(d / r.lane_width) + 1.0);
 }
-
 
 double Vehicle::getTargetD(int lane) const {
   return (lane - 1.0) * r.lane_width + r.lane_width / 2.0;
 }
 
-
-bool Vehicle::collidesWith(Vehicle &other, double time) {
-  auto my_state = getStateAt(time);
-  auto other_state = other.getStateAt(time);
-  double myLane = my_state[0];
-  double otherLane = other_state[0];
-  double myS = my_state[1];
-  double otherS = other_state[1];
-  return (myLane == otherLane && abs(myS - otherS) < carLength);
+vector<double> Vehicle::getStateAt(double time) {
+  double new_s = s + v_s * time;
+  double new_d = d + v_d * time;
+  return vector<double>{new_s, new_d, v_s, v_d};
 }
 
+int Vehicle::lag() {
+	return constants::UPDATE_WHEN - previousCurve.size();
+}
 
-pair<bool, int> Vehicle::willCollideWith(Vehicle &other,
-                                         int timesteps,
-                                         double dt) {
+// collision check
+bool Vehicle::collidesWith(Vehicle &other, double time) {
+  double m_s, m_d, o_s, o_d;
+  auto my_state = getStateAt(time); auto o_state = other.getStateAt(time);
+  m_s = my_state[0]; m_d = my_state[1]; o_s = o_state[0]; o_d = o_state[1];
+  auto s_d = abs(m_s - o_s);
+  auto d_d = abs(m_d - o_d);
+  return (s_d < constants::SAFETY_DISTANCE && d_d < constants::SAFETY_WIDTH);
+}
+
+pair<bool, int> Vehicle::willCollideWith(Vehicle &other, int timesteps, double dt) {
   for (int i = 0; i <= timesteps; i++) {
     if (collidesWith(other, i * dt)) {
       return pair<bool, int>{true, i};
@@ -99,14 +91,7 @@ pair<bool, int> Vehicle::willCollideWith(Vehicle &other,
   return pair<bool, int>{false, -1};
 }
 
-
-vector<double> Vehicle::getStateAt(double time) {
-  double new_s = s + speed * time;
-  double new_v = speed;
-  return vector<double>{new_s, new_v};
-}
-
-
+// output
 void Vehicle::printVehicle(ofstream &log) {
 
   log << "CAR STATE: " << endl;
@@ -114,8 +99,6 @@ void Vehicle::printVehicle(ofstream &log) {
   log << "YAW : " << yaw << " SPEED: " << speed << " ACC : " << acc << endl;
   log << "Current Mode: " << mode << endl;
 }
-
-
 void Vehicle::printVehicle() {
 
   cout << "CAR STATE: " << endl;

@@ -19,7 +19,6 @@ protected:
 		v1_.updateData(j, 1);
 		v1_.readPreviousPath(j, 1);
 		v1_.useRoadConfiguration(rcfg);
-		plan.planDuration = 1.0;
 	}
 
 	// virtual void TearDown() {}
@@ -36,7 +35,6 @@ protected:
 TEST_F(PlannerTest, getsInitialValues) {
 	EXPECT_EQ(plan.maxCost, constants::MAX_COST);
 	EXPECT_EQ(plan.nearBuffer, constants::SAFETY_DISTANCE);
-	EXPECT_EQ(plan.planDuration, 1.0); // changed in setUp
 
 	EXPECT_THAT(plan.next_modes, Contains(Key("KL")));
 	EXPECT_THAT(plan.next_modes, Contains(Key("MF")));

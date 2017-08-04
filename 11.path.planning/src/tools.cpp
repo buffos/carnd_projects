@@ -1,16 +1,19 @@
 #include "tools.h"
 
+/// Logistic fucntions. maps [0 inf] to [0 1]
 double logistic(double x) {
   // A function that returns a value between 0 and 1 for x in the range [0, infinity]
   //  and -1 to 1 for x in the range [-infinity, infinity].
   return 2.0 / (1 + exp(-x)) - 1.0;
 }
 
+/// Calc classical Euclidean distance
 double coords::distance(const double x1, const double y1,
                         const double x2, const double y2) {
   return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
+/// Find the closest waypoint to a given position
 int coords::ClosestWaypoint(const double x, const double y,
                             const vector<WayPoint> &wp) {
 
@@ -30,6 +33,7 @@ int coords::ClosestWaypoint(const double x, const double y,
   return closestWaypoint;
 }
 
+/// Find the next waypoint in the moving direction of the car.
 int coords::NextWaypoint(const double x, const double y, const double theta,
                          const vector<WayPoint> &wp) {
 
@@ -122,34 +126,6 @@ vector<double> coords::getXY(const double s, const double d,
   return {x, y};
 }
 
-/// The real distance between two cars , taking into account the track loop
-vector<double> coords::real_s_distance(const double s1, const double s2,
-                                       const double trackLength) {
-  double realDistance = 0;
-  double inFront; // 1 -> s1 is in front , 2 -> s2 in front
-  if (s1 > trackLength - constants::MAX_DISTANCE_TO_TRACK
-      && s2 < constants::MAX_DISTANCE_TO_TRACK) {
-    // s1 is behind s2
-    realDistance = (trackLength - s1) + s2;
-    inFront = 2.0;
-  } else if (s2 > trackLength - constants::MAX_DISTANCE_TO_TRACK
-      && s1 < constants::MAX_DISTANCE_TO_TRACK) {
-    // s2 is behind s1
-    realDistance = (trackLength - s2) + s1;
-    inFront = 1.0;
-  } else if (s1 > s2) // normal case
-  {
-    realDistance = s1 - s2;
-    inFront = 1.0;
-  } else // s2 > s1 normal case
-  {
-    realDistance = s2 - s1;
-    inFront = 2.0;
-  }
-
-  return vector<double>{realDistance, inFront};
-}
-
 /// Create a vector of indexes of Waypoint around the current position
 vector<int> coords::getLocalWayPointIndexes(const int index, const int back,
                                             const int front,
@@ -192,8 +168,7 @@ Splines coords::createLocalSplines(const double s, const int back,
   // if current_wp = 0 then prev_wp = -1 == the last in the list
   prev_wp = (prev_wp == -1) ? prev_wp + (int) wp.size() : prev_wp;
 
-  auto indexes =
-      std::move(getLocalWayPointIndexes(prev_wp, back, front, wp.size()));
+  auto indexes = getLocalWayPointIndexes(prev_wp, back, front, wp.size());
 
   vector<double> x;
   vector<double> y;
@@ -299,6 +274,7 @@ bool coords::isPointInSpline(double s, const Splines &sp) {
   return result;
 }
 
+/// Calc acceleration from points on curve
 double coords::accelerationFromCurve(const DiscreteCurve &curve,
                                      const int fromPoint,
                                      int toPoint) {

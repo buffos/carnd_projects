@@ -22,7 +22,7 @@ struct Navigator{
 	ofstream logger;
 
 	Navigator();
-	Navigator(string filename);
+	Navigator(const string &filename);
 	~Navigator();
 
 

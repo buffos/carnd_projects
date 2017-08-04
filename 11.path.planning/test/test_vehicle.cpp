@@ -39,8 +39,6 @@ TEST_F(VehicleTest, hasInitialValues) {
   EXPECT_EQ(v0_.yaw, 0.0);
   EXPECT_EQ(v0_.speed, 0.0);
   EXPECT_EQ(v0_.acc, 0.0);
-  EXPECT_EQ(v0_.end_s, 0.0);
-  EXPECT_EQ(v0_.end_d, 0.0);
   EXPECT_STREQ(v0_.mode.c_str(), "KL");
   EXPECT_EQ(v0_.previousCurve.c_1.size(), 0);
   EXPECT_EQ(v0_.r.lanes, 3); // rcfg is the default one
@@ -59,8 +57,6 @@ TEST_F(VehicleTest, initializesFromJson) {
   EXPECT_NEAR(v1_.yaw, 0.261799, 0.001);
   EXPECT_EQ(v1_.speed, 0.0);
   EXPECT_EQ(v1_.acc, 0.0);
-  EXPECT_EQ(v1_.end_s, 0.0);
-  EXPECT_EQ(v1_.end_d, 0.0);
   EXPECT_STREQ(v1_.mode.c_str(), "KL");
   EXPECT_EQ(v1_.previousCurve.c_1.size(), 0);
   EXPECT_THAT(v0_.currentGoal.start_s, ElementsAre(0, 0, 0));

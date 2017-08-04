@@ -121,58 +121,6 @@ DiscreteCurve CurveHandler::mergeCurves(DiscreteCurve &newCurve, DiscreteCurve &
 	return mergedCurve;
 }
 
-DiscreteCurve CurveHandler::mergeCurves2(DiscreteCurve &newCurve, DiscreteCurve &oldCurve) {
-	if (oldCurve.size() == 0) { return newCurve; }
-
-	DiscreteCurve mergedCurve;
-
-	double mergeFrontX = 0.0, mergeFrontY = 0.0; // (last point of old curve)
-	int smooth_range = 20;
-	int mergeSize = (oldCurve.size() > 15) ? 15 : oldCurve.size();
-
-	vector<double> previousPointXYinNewCurve;
-	vector<double> currentPointXYinNewCurve;
-
-	// reuse part of previous path, if applicable
-	for (int i = 0; i < mergeSize; i++) {
-		// re-use previous path
-		mergeFrontX = oldCurve.c_1[i];
-		mergeFrontY = oldCurve.c_2[i];
-		mergedCurve.c_1.push_back(mergeFrontX);
-		mergedCurve.c_2.push_back(mergeFrontY);
-	}
-	previousPointXYinNewCurve = { newCurve.c_1[mergeSize - 1], newCurve.c_2[mergeSize - 1] }; // the last of the new curve
-	previousPointXYinNewCurve = { newCurve.c_1[mergeSize - 1], newCurve.c_2[mergeSize - 1] }; // the last
-
-	// assemble rest of the path and smooth, if applicable
-	for (int i = mergeSize + 1; i < newCurve.size(); i++) {
-		currentPointXYinNewCurve = { newCurve.c_1[i], newCurve.c_2[i] };
-		if (oldCurve.size() > i) {
-			auto x_dif_planned = currentPointXYinNewCurve[0] - previousPointXYinNewCurve[0];
-			auto y_dif_planned = currentPointXYinNewCurve[1] - previousPointXYinNewCurve[1];
-			mergeFrontX = mergeFrontX + x_dif_planned; // adjust along the
-			mergeFrontY = mergeFrontY + y_dif_planned;
-
-			double smooth_scale_fac = (smooth_range - (i - mergeSize)) / smooth_range;
-			if (i > smooth_range)
-				smooth_scale_fac = 0.0;
-			double smooth_x = (oldCurve.c_1[i] * smooth_scale_fac) + (mergeFrontX * (1 - smooth_scale_fac));
-			double smooth_y = (oldCurve.c_2[i] * smooth_scale_fac) + (mergeFrontY * (1 - smooth_scale_fac));
-
-			mergedCurve.c_1.push_back(smooth_x);
-			mergedCurve.c_2.push_back(smooth_y);
-			previousPointXYinNewCurve = currentPointXYinNewCurve;
-
-		}
-		else {
-			mergedCurve.c_1.push_back(currentPointXYinNewCurve[0]);
-			mergedCurve.c_2.push_back(currentPointXYinNewCurve[1]);
-		}
-	}
-
-	return mergedCurve;
-}
-
 DiscreteCurve CurveHandler::appendCurve(DiscreteCurve &newCurve, DiscreteCurve &oldCurve) {
 
 	DiscreteCurve mergedCurve;

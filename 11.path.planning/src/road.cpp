@@ -47,6 +47,16 @@ void Road::readWayPointsFromFile(string filename) {
   }
 }
 
+vector<int> Road::adjacentLanes(int lane) const {
+  if (lane > 1 && lane < rcfg.lanes) {
+    return {lane - 1, lane + 1};
+  }
+  if (lane == 1) {
+    return {lane + 1};
+  }
+  return {lane - 1};
+}
+
 vector<double> Road::distanceInFront(const Vehicle &car, int lane) const {
   // this function will look ahead in the given lane
   // and find the distance to the closest car in front
@@ -105,14 +115,14 @@ double Road::closestVehicleAt(double s, double d, double time) {
   double d_closest = std::numeric_limits<double>::max();
   int i_closest = 0;
 
-
   for (unsigned int i = 0; i < cars.size(); i++) {
     double o_s, o_d;
     auto c_state = cars[i].getStateAt(time);
-	o_s = c_state[0]; o_d = c_state[1];
-    double d = sqrt( pow(o_s - s, 2) + pow(o_d - d, 2));
-    if (d < d_closest) {
-      d_closest = d;
+    o_s = c_state[0];
+    o_d = c_state[1];
+    double d2 = sqrt(pow(o_s - s, 2) + pow(o_d - d, 2));
+    if (d2 < d_closest) {
+      d_closest = d2;
       i_closest = i;
     }
   }
@@ -168,7 +178,6 @@ double Road::orientation(double s) {
   auto dy = xy_b[1] - xy_a[1];
   return atan2(dy, dx);
 }
-
 vector<double> Road::curvatureFactor(const double s, const double d, const int evaluationPoints,
                                      const double scanningDistance) const {
   // take a piece of 100 meters road and split it into 4 points

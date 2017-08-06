@@ -28,7 +28,7 @@ Trajectory TrajectoryGenerator::generateTrajectory(StateGoal &s, Vehicle &car, R
       tr.d_trajectory = jmt(goal, time, 2);
       tr.duration = time;
       tr.cost = totalCost(tr, s, car, r); // find cost of trajectory
-	  tr.goal = goal; // keep the new pertubed goal to inform the car about it.
+      tr.goal = goal; // keep the new pertubed goal to inform the car about it.
       newTrajectories.push_back(tr);
     }
   }
@@ -40,8 +40,6 @@ Trajectory TrajectoryGenerator::generateTrajectory(StateGoal &s, Vehicle &car, R
 
   // now we evaluate the generated trajectories and select the best trajectory
   // from the sorted array of trajectories
-  cout << "BEST TRAJECTORY COST " << newTrajectories[0].cost << endl;
-  cout << "WORST TRAJECTORY COST " << newTrajectories[newTrajectories.size()-1].cost << endl;
   return newTrajectories[0];
 }
 
@@ -59,10 +57,10 @@ vector<StateGoal> TrajectoryGenerator::perturbGoal(StateGoal &s, Road &r) {
     double factor = distribute_values(generator);
     newStateGoal.start_s = s.start_s;
     newStateGoal.start_d = s.start_d;
-    newStateGoal.end_s = {s.end_s[0] + r.rcfg.max_speed * s.duration * factor,
-                          s.end_s[1] + r.rcfg.max_speed * factor,
-                          s.end_s[2] + r.rcfg.max_acceleration * factor};
-    newStateGoal.end_d = {s.end_d[0] + factor, s.end_d[1], s.end_d[2]};
+    newStateGoal.end_s = {s.end_s[0] + s.end_s[1] * s.duration * factor,
+                          s.end_s[1] + s.end_s[1] * factor,
+                          s.end_s[2] + s.end_s[2] * factor};
+    newStateGoal.end_d = {s.end_d[0] , s.end_d[1], s.end_d[2]};
     newGoals.push_back(newStateGoal);
   }
   return newGoals;
@@ -294,47 +292,6 @@ double TrajectoryGenerator::slowLaneChangeCost(Trajectory &tr, StateGoal &s, Veh
 
 double TrajectoryGenerator::totalCost(Trajectory &tr, StateGoal &s, Vehicle &car, Road &r) {
   double cost = 0;
-
-  //auto d = timeDifferenceCost(tr, s, car, r);
-  //cost += constants::WEIGHT_TIME_DIFFERENCE_COST * d;
-  //auto differenceCost = s_DifferenceCost(tr, s, car, r);
-  //cost += constants::WEIGHT_S_DIFFERENCE_COST * differenceCost;
-  //auto d_differenceCost = d_DifferenceCost(tr, s, car, r);
-  //cost += constants::WEIGHT_D_DIFFERENCE_COST * d_differenceCost;
-  //auto d1 = collisionCost(tr, s, car, r);
-  //cost += constants::WEIGHT_COLLISION_COST * d1;
-  //auto d2 = bufferCost(tr, s, car, r);
-  //cost += constants::WEIGHT_BUFFER_COST * d2;
-  //auto accelerationCost = maxAccelerationCost(tr, s, car, r);
-  //cost += constants::WEIGHT_MAX_ACCELERATION_COST * accelerationCost;
-  //auto jerkCost = maxJerkCost(tr, s, car, r);
-  //cost += constants::WEIGHT_MAX_JERK_COST * jerkCost;
-  //auto speedCost = maxSpeedCost(tr, s, car, r);
-  //cost += constants::WEIGHT_MAX_SPEED_COST * speedCost;
-  //auto d3 = efficiencyCost(tr, s, car, r);
-  //cost += constants::WEIGHT_EFFICIENCY_COST * d3;
-  //auto d4 = totalJerkCost(tr, s, car, r);
-  //cost += constants::WEIGHT_TOTAL_JERK_COST * d4;
-  //auto d5 = totalAccelerationCost(tr, s, car, r);
-  //cost += constants::WEIGHT_TOTAL_ACCELERATION_COST * d5;
-  //auto changeCost = slowLaneChangeCost(tr, s, car, r);
-  //cost += constants::WEIGHT_EFFICIENCY_COST * changeCost;
-
-  //cout << "timeDifferenceCost " << d << endl;
-  //cout << "s_DifferenceCost " << differenceCost << endl;
-  //cout << "d_DifferenceCost " << d_differenceCost << endl;
-  //cout << "collisionCost " << d1 << endl;
-  //cout << "bufferCost " << d2 << endl;
-  //cout << "maxAccelerationCost " << accelerationCost << endl;
-  //cout << "Max Jerk Cost " << jerkCost << endl;
-  //cout << "Max Speed Cost " << speedCost << endl;
-  //cout << "efficiencyCost " << d3 << endl;
-  //cout << "totalJerkCost " << d4 << endl;
-  //cout << "totalAccelerationCost " << d5 << endl;
-
-
-  
-
   cost += constants::WEIGHT_TIME_DIFFERENCE_COST * timeDifferenceCost(tr, s, car, r);
   cost += constants::WEIGHT_S_DIFFERENCE_COST * s_DifferenceCost(tr, s, car, r);
   cost += constants::WEIGHT_D_DIFFERENCE_COST * d_DifferenceCost(tr, s, car, r);

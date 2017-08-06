@@ -28,7 +28,7 @@ struct DiscreteCurve {
 		c_2 = d;
 	};
 
-	inline int size() const { return c_1.size(); }
+	inline size_t size() const { return c_1.size(); }
 
 	inline string toJson() {
 		json msgJson;

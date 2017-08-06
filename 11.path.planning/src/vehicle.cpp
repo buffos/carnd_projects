@@ -59,7 +59,10 @@ int Vehicle::getLane() const {
 }
 
 double Vehicle::getTargetD(int lane) const {
-  return (lane - 1.0) * r.lane_width + r.lane_width / 2.0;
+  double dd = (lane - 1.0) * r.lane_width + r.lane_width / 2.0;
+  if (lane == 3) { dd -= 0.20; }
+  // hack because the simulator for some reason report out of lane
+  return dd;
 }
 
 vector<double> Vehicle::getStateAt(double time) {
@@ -69,14 +72,18 @@ vector<double> Vehicle::getStateAt(double time) {
 }
 
 int Vehicle::lag() {
-	return constants::UPDATE_WHEN - previousCurve.size();
+  return constants::UPDATE_WHEN - previousCurve.size();
 }
 
 // collision check
 bool Vehicle::collidesWith(Vehicle &other, double time) {
   double m_s, m_d, o_s, o_d;
-  auto my_state = getStateAt(time); auto o_state = other.getStateAt(time);
-  m_s = my_state[0]; m_d = my_state[1]; o_s = o_state[0]; o_d = o_state[1];
+  auto my_state = getStateAt(time);
+  auto o_state = other.getStateAt(time);
+  m_s = my_state[0];
+  m_d = my_state[1];
+  o_s = o_state[0];
+  o_d = o_state[1];
   auto s_d = abs(m_s - o_s);
   auto d_d = abs(m_d - o_d);
   return (s_d < constants::SAFETY_DISTANCE && d_d < constants::SAFETY_WIDTH);

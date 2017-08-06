@@ -63,6 +63,7 @@ string Navigator::operator()(const nlohmann::json &json) {
 		  logger << "id : " << i << " s: " << road.cars[i].s << " d: " << road.cars[i].d << endl;
 	  }
   }
+  car.printVehicle(logger);
   
 
   return mergedCurve.toJson();

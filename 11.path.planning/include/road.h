@@ -22,6 +22,7 @@ struct Road {
   void readWayPointsFromFile(string filename);
   void createTrackSpline();
 
+  vector<int> adjacentLanes(int lane) const;
   vector<double> distanceInFront(const Vehicle &car, int lane) const;
   vector<double> distanceBehind(const Vehicle &car, int lane) const;
   double closestVehicleAt(double s, double d, double time);

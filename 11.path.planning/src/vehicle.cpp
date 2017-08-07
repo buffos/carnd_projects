@@ -65,7 +65,7 @@ double Vehicle::getTargetD(int lane) const {
   return dd;
 }
 
-vector<double> Vehicle::getStateAt(double time) {
+vector<double> Vehicle::getStateAt(double time) const{
   double new_s = s + v_s * time;
   double new_d = d + v_d * time;
   return vector<double>{new_s, new_d, v_s, v_d};
@@ -92,10 +92,10 @@ bool Vehicle::collidesWith(Vehicle &other, double time) {
 pair<bool, int> Vehicle::willCollideWith(Vehicle &other, int timesteps, double dt) {
   for (int i = 0; i <= timesteps; i++) {
     if (collidesWith(other, i * dt)) {
-      return pair<bool, int>{true, i};
+      return make_pair(true, i);
     }
   }
-  return pair<bool, int>{false, -1};
+  return make_pair(false, -1);
 }
 
 // output
@@ -106,6 +106,7 @@ void Vehicle::printVehicle(ofstream &log) {
   log << "YAW : " << yaw << " SPEED: " << speed << " ACC : " << acc << endl;
   log << "Current Mode: " << mode << endl;
 }
+
 void Vehicle::printVehicle() {
 
   cout << "CAR STATE: " << endl;

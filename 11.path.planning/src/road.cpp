@@ -72,7 +72,7 @@ vector<double> Road::distanceInFront(const Vehicle &car, int lane) const {
       continue;
     }
     auto s_i = cars[i].s;
-    double d = (s < s_i ? s_i - s : s_i + S_MAX - s);
+    double d = (s <= s_i ? s_i - s : s_i + S_MAX - s);
     if (d < d_closest) {
       d_closest = d;
       i_closest = i;
@@ -80,7 +80,7 @@ vector<double> Road::distanceInFront(const Vehicle &car, int lane) const {
     }
   }
 
-  return vector<double>{d_closest, v_closest};
+  return vector<double>{d_closest, v_closest, (double) i_closest};
 }
 
 vector<double> Road::distanceBehind(const Vehicle &car, int lane) const {
@@ -98,14 +98,16 @@ vector<double> Road::distanceBehind(const Vehicle &car, int lane) const {
       continue;
     }
     auto s_i = cars[i].s;
-    double d = (s_i < s ? s - s_i : s + S_MAX - s_i);
+    double d = (s_i <= s ? s - s_i : s + S_MAX - s_i);
+	d = (abs(s_i - s) < constants::CAR_LENGTH) ? 0 : d;
     if (d < d_closest) {
       d_closest = d;
       i_closest = i;
+	  v_closest = cars[i].speed;
     }
   }
 
-  return vector<double>{d_closest, v_closest};
+  return vector<double>{d_closest, v_closest, (double) i_closest};
 }
 
 double Road::closestVehicleAt(double s, double d, double time) {

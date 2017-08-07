@@ -48,8 +48,6 @@ double Planner::costLaneChange(const Vehicle &car, const Road &r, bool left) {
   double cost1 = lookBesidesPenalty(car, r, 1 * next); // the cost for the next lane
   double cost2 = lookBesidesPenalty(car, r, 2 * next); // the cost for the next lane
 
-  cout << "****** CHANGE LANES CODE *********" << endl;
-
   if (cost1 >= constants::MAX_COST) {
     return constants::MAX_COST; // not safe to change lanes
   }
@@ -176,7 +174,7 @@ StateGoal Planner::realizeChangeLeft(Vehicle &car, const Road &r) {
   goal.start_d = car.currentGoal.end_d;
   double delta_d = goal.start_d[0] - r.rcfg.lane_width;
 
-  goal.end_s = endGoalFromTargetVelocity(goal, r, goal.start_s[1]); // keep the same speed
+  goal.end_s = endGoalFromTargetVelocity(goal, r, constants::MAX_SPEED); // keep the same speed
   goal.end_d = {delta_d, 0.0, 0.0}; // I want have zero perpendicular speed at the end
   // 4. setup next update
   nextUpdateIn += (int) (goal.duration * constants::FRAMES_PER_SEC - reportedLag); // 10 points before the end
@@ -193,7 +191,7 @@ StateGoal Planner::realizeChangeRight(Vehicle &car, const Road &r) {
   goal.start_d = car.currentGoal.end_d;
   double delta_d = goal.start_d[0] + r.rcfg.lane_width;
 
-  goal.end_s = endGoalFromTargetVelocity(goal, r, goal.start_s[1]); // keep the same speed
+  goal.end_s = endGoalFromTargetVelocity(goal, r, constants::MAX_SPEED); // keep the same speed
   goal.end_d = {delta_d, 0.0, 0.0}; // I want have zero perpendicular speed at the end
   // 4. setup next update
   nextUpdateIn += (int) (goal.duration * constants::FRAMES_PER_SEC - reportedLag); // 10 points before the end
@@ -290,8 +288,7 @@ double Planner::lookBehindPenalty(const Vehicle &car, const Road &r, const int l
   auto speed = cl[1];
   auto mySpeed = car.currentGoal.end_s[1];
 
-  if (distance < 0.25 * constants::TARGET_SPEED &&
-      (distance + 0.25 * (speed - mySpeed)) < 0.25 * constants::TARGET_SPEED) {
+  if ((distance + constants::CL_DURATION * (speed - mySpeed)) < constants::CL_DURATION * constants::TARGET_SPEED) {
     return constants::MAX_COST;
   }
   if (constants::LOOK_BACK_DISTANCE > distance) {
@@ -327,17 +324,99 @@ double Planner::lookBesidesPenalty(const Vehicle &car, const Road &r, const int 
 }
 void Planner::logSelectedPlan(const Vehicle &car, const Road &r, const StateGoal &goal, string selectedPlan) {
   vector<double> frontResults = r.distanceInFront(car, car.getLane());
+  vector<double> backResults = r.distanceInFront(car, car.getLane());
   double frontDistance = frontResults[0];
   double frontSpeed = frontResults[1];
 
-  logger << "SELECTED PLAN : " << selectedPlan << endl;
-  logger << "PLAN DURATION: " << goal.duration << endl;
+  auto b1 = r.distanceBehind(car, 1)[0];
+  auto b2 = r.distanceBehind(car, 2)[0];
+  auto b3 = r.distanceBehind(car, 3)[0];
+  auto f1 = r.distanceInFront(car, 1)[0];
+  auto f2 = r.distanceInFront(car, 2)[0];
+  auto f3 = r.distanceInFront(car, 3)[0];
 
-  logger << "car distance in front: " << frontDistance << " car speed " << frontSpeed << endl;
-  logger << "my current lane is: " << car.getLane() << " and my current d is " << car.d << endl;
-  logger << "current s " << car.s << " current speed  " << car.speed << " current acceleration " << car.acc << endl;
-  logger << "start s " << goal.start_s[0] << " start speed  " << goal.start_s[1] << " start acceleration "
-         << goal.start_s[2] << endl;
-  logger << "target s " << goal.end_s[0] << " target speed  " << goal.end_s[1] << " target acceleration "
-         << goal.end_s[2] << endl << endl;
+  logger << "******************   SELECTED PLAN : " << selectedPlan << endl;
+  logger << "******************   PLAN DURATION : " << goal.duration << endl;
+
+  logger << "LANE NO : " << car.getLane() << endl;
+  logger << "FRONT SPACE: " << frontDistance << "m  BACK SPACE: " << b1 << " m" << endl;
+  logger << "SPEED: " << frontSpeed << " m/s" << "ACC: " << car.acc << endl;
+  logger << "S: " << car.s << "      D: " << car.d << endl;
+  logger << "PLAN : ----------------------------------------------------------";
+  logger << "START  S " << goal.start_s[0] << " START V  " << goal.start_s[1] << " START A " << goal.start_s[2] << endl;
+  logger << "TARGET S " << goal.end_s[0] << " TARGET V  " << goal.end_s[1] << " TARGET A " << goal.end_s[2] << endl;
+  logger << endl;
+
+  logger << "*********************** LANES ANALYSIS *****************************" << endl;
+  logger << " LANE 1: ---" << endl;
+  logger << " -----   LOOK AHEAD PENALTY: " << lookAheadPenalty(car, r, 1) << " ( " << f1 << " )" << endl;
+  logger << " -----   LOOK BEHIND PENALTY: " << lookBehindPenalty(car, r, 1) << " ( " << b1 << " )" << endl << endl;
+  logger << " LANE 2: ---" << endl;
+  logger << " -----   LOOK AHEAD PENALTY: " << lookAheadPenalty(car, r, 2) << " ( " << f2 << " )" << endl;
+  logger << " -----   LOOK BEHIND PENALTY: " << lookBehindPenalty(car, r, 2) << " ( " << b2 << " )" << endl << endl;
+  logger << " LANE 3: ---" << endl;
+  logger << " -----   LOOK AHEAD PENALTY: " << lookAheadPenalty(car, r, 3) << " ( " << f3 << " )" << endl;
+  logger << " -----   LOOK BEHIND PENALTY: " << lookBehindPenalty(car, r, 3) << " ( " << b3 << " )" << endl << endl;
+
+  logger << " MY LANE: --- " << car.getLane() << endl;
+  logger << " -----   LOOK BESIDES COST LEFT:  0 " << lookBesidesPenalty(car, r, 0) << endl;
+  logger << " -----   LOOK BESIDES COST LEFT: -1 " << lookBesidesPenalty(car, r, -1) << endl;
+  logger << " -----   LOOK BESIDES COST LEFT: -2 " << lookBesidesPenalty(car, r, -2) << endl;
+  logger << endl << endl;
+  logger << " -----   LOOK BESIDES COST RIGHT:  0 " << lookBesidesPenalty(car, r, 0) << endl;
+  logger << " -----   LOOK BESIDES COST RIGHT:  1 " << lookBesidesPenalty(car, r, 1) << endl;
+  logger << " -----   LOOK BESIDES COST RIGHT:  2 " << lookBesidesPenalty(car, r, 2) << endl;
 }
+
+//array<bool, 3> Planner::collisionDetector(const Vehicle &car, const Road &r, double planDuration) {
+//  // 1. get my car position
+//  auto c_s = car.currentGoal.end_s[0];
+//  auto c_d = car.currentGoal.end_d[0];
+//  // 2. check for adjacent lanes
+//  auto lane = car.getLane();
+//  auto adj = r.adjacentLanes(lane);
+//  bool collision = false;
+//  vector<double> dangerous_positions;
+//
+//  // 3. for each adjacent lane collect
+//  //   a. the side they are coming from, to know if I can escape to that lane
+//  //   b. the s position to later exclude those from available positions for me.
+//  bool leftIsSafe = true;
+//  bool rightIsSafe = true; // consider that both lane are available and free
+//
+//  for (size_t i = 0; i < adj.size(); i++) {
+//
+//    auto car_b = r.distanceBehind(car, adj[i]); // d2, v, index
+//    auto car_f = r.distanceInFront(car, adj[i]); // d2, v, index
+//    // check those cars and update escape availiability in left and right lanes.
+//    carIsThreat(r, planDuration, c_s, c_d, dangerous_positions, car_b, leftIsSafe, rightIsSafe);
+//    carIsThreat(r, planDuration, c_s, c_d, dangerous_positions, car_f, leftIsSafe, rightIsSafe);
+//  } // finished collecting possible threats.
+//  // now i know the threats and if i have an escape route to the left or right lanes.
+//
+//  if (dangerous_positions.size() == 0) {
+//    // no collision threats
+//    return {collision, rightIsSafe, leftIsSafe}; // crash? leftIsSafe? rightIsSafe?
+//  }
+//  collision = true;
+//  return {collision, rightIsSafe, leftIsSafe};
+//}
+//
+//void Planner::carIsThreat(const Road &r, double planDuration, double car_s, double car_d,
+//                          vector<double> &dangerousCars, const vector<double> &other_car,
+//                          bool leftIsSafe, bool rightIsSafe) const {
+//  if (other_car[0] <= constants::CL_DETECTION_DIST) {
+//    // 1. get car index
+//    auto index = other_car[2];
+//    // 2. get the state at the end of the plan duration
+//    auto state_b_t = r.cars[index].getStateAt(planDuration); // state at end of plan
+//    // 3. check if it goes on me
+//    if (abs(state_b_t[1] - car_d) < constants::SAFETY_WIDTH && abs(state_b_t[0] - car_s) < constants::CAR_LENGTH) {
+//      dangerousCars.push_back(r.cars[index].s); // its a danger
+//    }
+//    // 4. mark that lane as unsafe as escape route
+//    if (state_b_t[1] < car_d) { leftIsSafe = false; }
+//    if (state_b_t[1] > car_d) { rightIsSafe = false; }
+//  }
+//}
+

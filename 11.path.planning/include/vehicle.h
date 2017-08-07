@@ -48,7 +48,7 @@ struct Vehicle {
    * @param time
    * @return The state in given time {new_s, new_d, v_s, v_d}
    */
-  vector<double> getStateAt(double time);
+  vector<double> getStateAt(double time) const ;
 };
 
 #endif // !VEHICLE_H

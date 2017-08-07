@@ -22,6 +22,7 @@ const double MF_DURATION = 0.5;                ///<  MatchFront plan duration in
 const double CL_DURATION = 2.0;                ///<  Change Lanes plan duration in seconds
 const double KL_DURATION = 2.0;                ///<  plan duration in seconds for Keep in Lane
 const double START_DURATION = 4.0;             ///<  Start Engine plan duration in seconds
+const double CL_DETECTION_DIST = CAR_LENGTH;   ///<  cars that close to me are checked for collision at plan time
 const double SAFETY_DISTANCE = 4 * CAR_LENGTH; ///<  how close to other vehicles to go in meters
 const double SAFETY_WIDTH = CAR_WIDTH / 2;     ///<  the closest that is safe to be with a car by the side
 const int UPDATE_WHEN = 40;                    ///<  update when 40 points are left in curve
@@ -38,7 +39,7 @@ const int SAMPLE_TRAJECTORIES = 20;            ///<   how many trajectories to g
 
 const double WEIGHT_TIME_DIFFERENCE_COST = 1.0;        ///<  weight for time difference between original plan and final
 const double WEIGHT_S_DIFFERENCE_COST = 10.0;         ///<  weight for s difference between original plan and final
-const double WEIGHT_D_DIFFERENCE_COST = 10000.0;         ///<  weight for d difference between original plan and final
+const double WEIGHT_D_DIFFERENCE_COST = 10.0;         ///<  weight for d difference between original plan and final
 const double WEIGHT_COLLISION_COST = 10000000.0;       ///<  weight for collision
 const double WEIGHT_BUFFER_COST = 140.0;               ///<  weight for avoiding traffic
 const double WEIGHT_MAX_ACCELERATION_COST = 10000000.0;///<  weight for not exceeding the allowed acceleration

@@ -1,3 +1,9 @@
+/**
+ * @file road.cpp
+ * @brief Implementation of the Road struct
+ *
+ * @author  Kostas Oreopoulos
+ */
 #include "road.h"
 
 #include <fstream>

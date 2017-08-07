@@ -1,3 +1,10 @@
+/**
+ * @file tools.cpp
+ * @brief Implementation of helper functions contained in coords namespace
+ *
+ *
+ * @author  Kostas Oreopoulos
+ */
 #include "tools.h"
 
 /// Logistic fucntions. maps [0 inf] to [0 1]

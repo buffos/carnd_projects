@@ -1,3 +1,10 @@
+/**
+ * @file vehicle.cpp
+ * @brief Implementation of the vehicle struct
+ *
+ *
+ * @author  Kostas Oreopoulos
+ */
 #include "vehicle.h"
 #include "tools.h"
 
@@ -65,7 +72,7 @@ double Vehicle::getTargetD(int lane) const {
   return dd;
 }
 
-vector<double> Vehicle::getStateAt(double time) const{
+vector<double> Vehicle::getStateAt(double time) const {
   double new_s = s + v_s * time;
   double new_d = d + v_d * time;
   return vector<double>{new_s, new_d, v_s, v_d};

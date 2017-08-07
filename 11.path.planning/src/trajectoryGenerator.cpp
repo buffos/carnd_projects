@@ -1,3 +1,9 @@
+/**
+ * @file trajectoryGenerator.cpp
+ * @brief Implementation of the Trajectory Generator class
+ *
+ * @author  Kostas Oreopoulos
+ */
 #include "trajectoryGenerator.h"
 #include "polynomial.h"
 #include "tools.h"
@@ -60,7 +66,7 @@ vector<StateGoal> TrajectoryGenerator::perturbGoal(StateGoal &s, Road &r) {
     newStateGoal.end_s = {s.end_s[0] + s.end_s[1] * s.duration * factor,
                           s.end_s[1] + s.end_s[1] * factor,
                           s.end_s[2] + s.end_s[2] * factor};
-    newStateGoal.end_d = {s.end_d[0] , s.end_d[1], s.end_d[2]};
+    newStateGoal.end_d = {s.end_d[0], s.end_d[1], s.end_d[2]};
     newGoals.push_back(newStateGoal);
   }
   return newGoals;

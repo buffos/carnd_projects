@@ -1,3 +1,14 @@
+/**
+ * @file vehicle.h
+ * @brief An object to represent a Vehicle driving down a highway
+ *
+ * It contains the necessary function and data to communicate with
+ * the planner and trajectory generator to accomplish the task of
+ * driving the car down the highway.
+ *
+ * @author  Kostas Oreopoulos
+ */
+
 #ifndef VEHICLE_H
 #define VEHICLE_H
 

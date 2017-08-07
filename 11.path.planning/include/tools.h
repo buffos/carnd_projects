@@ -1,3 +1,10 @@
+/**
+ * @file tools.h
+ * @brief Helper functions contained in coords namespace
+ *
+ *
+ * @author  Kostas Oreopoulos
+ */
 #ifndef TOOLS_H
 #define TOOLS_H
 

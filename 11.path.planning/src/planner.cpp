@@ -1,3 +1,10 @@
+/**
+ * @file planner.cpp
+ * @brief The behavior planner: implementation
+ *
+ *
+ * @author  Kostas Oreopoulos
+ */
 #include "planner.h"
 
 map<string, vector<string>> Planner::next_modes = {
@@ -35,9 +42,6 @@ string Planner::select_mode(const Vehicle &car, const Road &r) {
             [](std::pair<double, string> &i, std::pair<double, string> &j) -> bool {
               return i.first < j.first;
             });
-  for (auto mode: next_modes_cost) {
-    cout << "cost for " << mode.first << " is " << mode.second << endl;
-  }
   string selected_mode = next_modes_cost[0].second;
   return selected_mode;
 }
@@ -75,16 +79,6 @@ double Planner::costMatchFrontSpeed(const Vehicle &car, const Road &r) {
 
 double Planner::costEmergencyBrake(const Vehicle &car, const Road &r) {
   return constants::LOOK_AHEAD_DISTANCE - constants::CAR_LENGTH * 2;
-}
-
-double Planner::costInLane(const Vehicle &car, const Road &r, const int lane) {
-  vector<double> frontResults = r.distanceInFront(car, lane);
-  double frontDistance = frontResults[0];
-
-  if (frontDistance <= constants::LOOK_AHEAD_DISTANCE) {
-    return constants::LOOK_AHEAD_DISTANCE - frontDistance;
-  }
-  return 0.0;
 }
 
 StateGoal Planner::realizePlan(string mode, Vehicle &car, const Road &r) {
@@ -137,28 +131,12 @@ StateGoal Planner::realizeMatchFront(Vehicle &car, const Road &r) {
 
   vector<double> frontResults = r.distanceInFront(car, car.getLane());
   double frontSpeed = frontResults[1];
-//  double targetSpeed = c_v;
-//  double targetAcc = 0.0;
-//  if (frontSpeed - 5 < car.speed) {
-//    targetAcc = max(c_a - 0.5 * constants::MAX_JERK * constants::MF_DURATION, - 0.9 * constants::MAX_ACCELERATION);
-//    targetSpeed += targetAcc * constants::MF_DURATION;
-//  }
-
-  cout << "****************************************************" << endl;
-  cout << "MF MODE :  " << endl;
-  cout << "CURRENT SPEED " << car.speed << " TARGET SPEED : " << frontSpeed - 5 << endl;
-  cout << "FRONT CAR SPEED " << frontSpeed << endl;
-  cout << "CURRENT DISTANCE " << frontResults[0] << endl;
-  cout << "****************************************************" << endl;
-
   // 2. create goal
   goal.duration = constants::MF_DURATION;
   goal.start_s = car.currentGoal.end_s;
   goal.start_d = car.currentGoal.end_d;
 
   goal.end_d = {car.getTargetD(car.getLane()), 0.0, 0.0};
-  // auto new_s = goal.start_s[0] + targetSpeed * goal.duration;
-  //goal.end_s = {new_s, targetSpeed, targetAcc};
   goal.end_s = endGoalFromTargetVelocity(goal, r, frontSpeed - 5);
   // 3. setup next update
   nextUpdateIn += (int) (goal.duration * constants::FRAMES_PER_SEC - reportedLag); // 10 points before the end

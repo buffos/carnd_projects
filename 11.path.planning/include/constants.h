@@ -27,19 +27,19 @@ const double SAFETY_DISTANCE = 4 * CAR_LENGTH; ///<  how close to other vehicles
 const double SAFETY_WIDTH = CAR_WIDTH / 2;     ///<  the closest that is safe to be with a car by the side
 const int UPDATE_WHEN = 40;                    ///<  update when 40 points are left in curve
 
-const double LOOK_AHEAD_DISTANCE = 100;              ///<   care about vehicles that far.
-const double LOOK_BACK_DISTANCE = 25;                ///<   care about vehicles back before overtaking.
-const double PENALTY_LANE_POSITION = 10.;            ///<   prefer middle lanes
-const double PENALTY_LANE_CHANGE = 10;                ///<   penalty for lane changing
-const double WEIGHT_SAFETY_BEHIND = 5.;              ///<   a little bit unsafe behind
+const double LOOK_AHEAD_DISTANCE = 100;        ///<   care about vehicles that far.
+const double LOOK_BACK_DISTANCE = 25;          ///<   care about vehicles back before overtaking.
+const double PENALTY_LANE_POSITION = 10.;      ///<   prefer middle lanes
+const double PENALTY_LANE_CHANGE = 10;         ///<   penalty for lane changing
+const double WEIGHT_SAFETY_BEHIND = 5.;        ///<   a little bit unsafe behind
 
 // trajectories constant
 const double STD_DEVIATION = 0.10;             ///<   how different should the generated values be from the mean
 const int SAMPLE_TRAJECTORIES = 20;            ///<   how many trajectories to generate in order to pick the best
 
 const double WEIGHT_TIME_DIFFERENCE_COST = 1.0;        ///<  weight for time difference between original plan and final
-const double WEIGHT_S_DIFFERENCE_COST = 10.0;         ///<  weight for s difference between original plan and final
-const double WEIGHT_D_DIFFERENCE_COST = 10.0;         ///<  weight for d difference between original plan and final
+const double WEIGHT_S_DIFFERENCE_COST = 10.0;          ///<  weight for s difference between original plan and final
+const double WEIGHT_D_DIFFERENCE_COST = 10.0;          ///<  weight for d difference between original plan and final
 const double WEIGHT_COLLISION_COST = 10000000.0;       ///<  weight for collision
 const double WEIGHT_BUFFER_COST = 140.0;               ///<  weight for avoiding traffic
 const double WEIGHT_MAX_ACCELERATION_COST = 10000000.0;///<  weight for not exceeding the allowed acceleration
